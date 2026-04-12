@@ -10,9 +10,15 @@ if (!PUBLISHABLE_KEY) {
   throw new Error('VITE_CLERK_PUBLISHABLE_KEY não configurada.');
 }
 
+const BASE = import.meta.env.BASE_URL || '/';
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider
+      publishableKey={PUBLISHABLE_KEY}
+      afterSignInUrl={BASE}
+      afterSignUpUrl={BASE}
+    >
       <App />
     </ClerkProvider>
   </StrictMode>
