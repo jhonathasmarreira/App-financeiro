@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { SignedIn, SignedOut, useUser } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, useUser, useSession } from '@clerk/clerk-react';
 import { LoginPage } from './pages/LoginPage';
 import { AppLayout } from './components/AppLayout';
 import { Dashboard } from './pages/Dashboard';
@@ -20,13 +20,31 @@ const PAGE_TITLES: Record<Page, string> = {
 
 function MainApp() {
   const { user } = useUser();
+  const { session } = useSession();
+  const setToken = useFinanceStore(s => s.setToken);
   const loadTransactions = useFinanceStore(s => s.loadTransactions);
   const loading = useFinanceStore(s => s.loading);
   const [page, setPage] = useState<Page>('dashboard');
 
   useEffect(() => {
-    if (user?.id) loadTransactions(user.id);
-  }, [user?.id]);
+    if (!user?.id || !session) return;
+
+    // Get a Supabase-compatible JWT from Clerk (requires JWT Template named "supabase")
+    // If the template is not yet configured, fall back to anon key (app-level filtering only)
+    session
+      .getToken({ template: 'supabase' })
+      .then((token) => {
+        if (token) setToken(token);
+      })
+      .catch(() => {
+        console.warn(
+          'Clerk JWT template "supabase" not found — RLS will rely on app-level user_id filter only.'
+        );
+      })
+      .finally(() => {
+        loadTransactions(user.id);
+      });
+  }, [user?.id, session]);
 
   if (loading) {
     return (

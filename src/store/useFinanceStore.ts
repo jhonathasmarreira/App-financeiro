@@ -1,12 +1,16 @@
 import { create } from 'zustand';
-import { supabase } from '../lib/supabase';
+import { supabase, createAuthClient } from '../lib/supabase';
 import { v4 as uuidv4 } from '../utils/uuid';
 import type { Transaction } from '../types';
+
+// Authenticated Supabase client — replaced once the Clerk JWT is available
+let _client = supabase;
 
 interface FinanceState {
   transactions: Transaction[];
   loading: boolean;
   userId: string | null;
+  setToken: (token: string) => void;
   loadTransactions: (userId: string) => Promise<void>;
   addTransaction: (data: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
   addTransactions: (items: Omit<Transaction, 'id' | 'createdAt'>[]) => Promise<number>;
@@ -19,9 +23,13 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
   loading: false,
   userId: null,
 
+  setToken: (token) => {
+    _client = createAuthClient(token);
+  },
+
   loadTransactions: async (userId) => {
     set({ loading: true, userId });
-    const { data, error } = await supabase
+    const { data, error } = await _client
       .from('transactions')
       .select('*')
       .eq('user_id', userId)
@@ -54,7 +62,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
     const id = uuidv4();
     const newTx: Transaction = { ...data, id, createdAt: new Date().toISOString() };
     set((s) => ({ transactions: [newTx, ...s.transactions] }));
-    const { error } = await supabase.from('transactions').insert({
+    const { error } = await _client.from('transactions').insert({
       id, user_id: userId,
       type: data.type, description: data.description,
       amount: data.amount, category: data.category,
@@ -90,7 +98,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
       parcela: r.parcela, data_fatura: r.data_fatura || '',
     }));
     set((s) => ({ transactions: [...newTxs, ...s.transactions] }));
-    const { error } = await supabase.from('transactions').insert(rows);
+    const { error } = await _client.from('transactions').insert(rows);
     if (error) {
       console.error('Erro ao importar:', error.message);
       const ids = new Set(rows.map((r) => r.id));
@@ -103,14 +111,14 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
   removeTransaction: async (id) => {
     const prev = get().transactions;
     set((s) => ({ transactions: s.transactions.filter((t) => t.id !== id) }));
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    const { error } = await _client.from('transactions').delete().eq('id', id);
     if (error) { console.error('Erro ao remover:', error.message); set({ transactions: prev }); }
   },
 
   updateTransaction: async (id, data) => {
     const prev = get().transactions;
     set((s) => ({ transactions: s.transactions.map((t) => t.id === id ? { ...t, ...data } : t) }));
-    const { error } = await supabase.from('transactions').update({
+    const { error } = await _client.from('transactions').update({
       type: data.type, description: data.description,
       amount: data.amount, category: data.category,
       date: data.date, parcela: data.parcela,
