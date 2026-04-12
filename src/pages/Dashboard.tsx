@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, PlusCircle, LogOut } from 'lucide-react';
+import { useMemo, useState, useEffect } from 'react';
+import { TrendingUp, TrendingDown, Wallet, PlusCircle, LogOut, Loader2 } from 'lucide-react';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { SummaryCard } from '../components/SummaryCard';
@@ -11,14 +11,22 @@ import { toMonthKey, currentMonthKey, getMonthLabel } from '../utils/format';
 
 export function Dashboard() {
   const transactions = useFinanceStore((s) => s.transactions);
+  const loading = useFinanceStore((s) => s.loading);
+  const loadTransactions = useFinanceStore((s) => s.loadTransactions);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey());
   const { signOut } = useClerk();
   const { user } = useUser();
 
+  useEffect(() => {
+    if (user?.id) loadTransactions(user.id);
+  }, [user?.id]);
+
   const availableMonths = useMemo(() => {
     const months = new Set(transactions.map((t) => toMonthKey(t.date)));
-    return Array.from(months).sort().reverse();
+    const list = Array.from(months).sort().reverse();
+    if (!list.includes(currentMonthKey())) list.unshift(currentMonthKey());
+    return list;
   }, [transactions]);
 
   const filtered = useMemo(
@@ -37,6 +45,17 @@ export function Dashboard() {
   );
 
   const balance = income - expense;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-3 text-slate-500">
+          <Loader2 size={32} className="animate-spin text-blue-500" />
+          <span className="text-sm">Carregando transações...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
