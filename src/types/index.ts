@@ -12,24 +12,16 @@ export type Category =
   | 'Educação'
   | 'Lazer'
   | 'Vestuário'
+  | 'Importado'
   | 'Outros (Despesa)';
 
 export const INCOME_CATEGORIES: Category[] = [
-  'Salário',
-  'Freelance',
-  'Investimentos',
-  'Outros (Receita)',
+  'Salário', 'Freelance', 'Investimentos', 'Outros (Receita)',
 ];
 
 export const EXPENSE_CATEGORIES: Category[] = [
-  'Alimentação',
-  'Transporte',
-  'Moradia',
-  'Saúde',
-  'Educação',
-  'Lazer',
-  'Vestuário',
-  'Outros (Despesa)',
+  'Alimentação', 'Transporte', 'Moradia', 'Saúde',
+  'Educação', 'Lazer', 'Vestuário', 'Importado', 'Outros (Despesa)',
 ];
 
 export interface Transaction {
@@ -38,13 +30,10 @@ export interface Transaction {
   description: string;
   amount: number;
   category: Category;
-  date: string; // ISO date string YYYY-MM-DD
+  date: string;          // YYYY-MM-DD
   createdAt: string;
+  parcela?: string;      // ex: "01/12"
+  data_fatura?: string;  // YYYY-MM-DD (billing date)
 }
 
-export interface MonthSummary {
-  month: string; // YYYY-MM
-  income: number;
-  expense: number;
-  balance: number;
-}
+export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'importar';
