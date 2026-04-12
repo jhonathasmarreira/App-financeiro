@@ -87,7 +87,7 @@ export function Dashboard() {
             Nova transação
           </button>
           <button
-            onClick={() => signOut()}
+            onClick={() => signOut({ redirectUrl: import.meta.env.BASE_URL })}
             className="flex items-center gap-2 border border-slate-200 hover:bg-slate-100 text-slate-600 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
             title="Sair"
           >
