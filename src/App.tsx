@@ -48,10 +48,62 @@ function MainApp() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)' }}>
-        <div style={{ textAlign: 'center', color: 'var(--muted)' }}>
-          <div style={{ fontSize: 36, marginBottom: 12, animation: 'spin 1s linear infinite' }}>⟳</div>
-          <p style={{ fontSize: 14 }}>Carregando...</p>
+      <div style={{
+        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', gap: 32,
+        animation: 'fade-in .4s ease',
+      }}>
+        {/* Logo + spinner */}
+        <div style={{ position: 'relative', width: 80, height: 80 }}>
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '3px solid var(--border)',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '3px solid transparent',
+            borderTopColor: 'var(--accent)',
+            animation: 'spin .9s linear infinite',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 10, borderRadius: '50%',
+            border: '2px solid transparent',
+            borderTopColor: 'var(--accent2)',
+            animation: 'spin 1.4s linear infinite reverse',
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: 26,
+          }}>💳</div>
+        </div>
+
+        {/* Title */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', marginBottom: 6 }}>
+            FinanceDesk
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--muted)' }}>Carregando seus dados...</div>
+        </div>
+
+        {/* Progress bar */}
+        <div style={{ width: 220, background: 'var(--surface2)', borderRadius: 99, height: 4, overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <div style={{
+            height: '100%', borderRadius: 99,
+            background: 'linear-gradient(90deg, var(--accent), var(--accent2))',
+            animation: 'progress-fill 2.5s ease forwards',
+          }} />
+        </div>
+
+        {/* Pulsing dots */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: 'var(--accent)',
+              animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+            }} />
+          ))}
         </div>
       </div>
     );
