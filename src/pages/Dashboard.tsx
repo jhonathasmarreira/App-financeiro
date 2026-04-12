@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, Wallet, PlusCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PlusCircle, LogOut } from 'lucide-react';
+import { useClerk, useUser } from '@clerk/clerk-react';
 import { useFinanceStore } from '../store/useFinanceStore';
 import { SummaryCard } from '../components/SummaryCard';
 import { TransactionList } from '../components/TransactionList';
@@ -12,6 +13,8 @@ export function Dashboard() {
   const transactions = useFinanceStore((s) => s.transactions);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey());
+  const { signOut } = useClerk();
+  const { user } = useUser();
 
   const availableMonths = useMemo(() => {
     const months = new Set(transactions.map((t) => toMonthKey(t.date)));
@@ -41,7 +44,9 @@ export function Dashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Controle Financeiro</h1>
-          <p className="text-slate-500 text-sm mt-1">Gerencie suas receitas e despesas</p>
+          <p className="text-slate-500 text-sm mt-1">
+            Olá, {user?.firstName ?? user?.emailAddresses[0]?.emailAddress ?? 'usuário'}!
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <select
@@ -61,6 +66,13 @@ export function Dashboard() {
           >
             <PlusCircle size={16} />
             Nova transação
+          </button>
+          <button
+            onClick={() => signOut()}
+            className="flex items-center gap-2 border border-slate-200 hover:bg-slate-100 text-slate-600 px-3 py-2 rounded-xl text-sm font-medium transition-colors"
+            title="Sair"
+          >
+            <LogOut size={16} />
           </button>
         </div>
       </div>
