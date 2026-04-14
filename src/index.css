@@ -143,14 +143,11 @@ input::placeholder { color: var(--muted); }
   }
 
   .csv-preview-table {
-    max-height: 200px !important;
+    max-height: none !important;
+    overflow-y: visible !important;
   }
 
   .csv-action-buttons {
-    position: sticky;
-    bottom: 0;
-    background: var(--surface);
-    padding: 12px 0 4px;
     margin-top: 12px;
   }
 }
