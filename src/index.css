@@ -63,6 +63,88 @@ input::placeholder { color: var(--muted); }
 }
 @keyframes fade-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── Responsive Layout ─────────────────────────────────── */
+
+.app-sidebar {
+  transition: transform 0.25s ease;
+}
+
+/* Hamburger — hidden on desktop */
+.hamburger-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 18px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+/* Overlay — hidden on desktop */
+.sidebar-overlay {
+  display: none;
+}
+
+/* Dashboard charts grid */
+.dashboard-charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .app-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: var(--sidebar) !important;
+    transform: translateX(-100%);
+    z-index: 200;
+  }
+
+  .app-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.55);
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 199;
+  }
+
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  .app-content-area {
+    padding: 14px !important;
+  }
+
+  .app-header-padding {
+    padding: 0 14px !important;
+  }
+
+  .header-date {
+    display: none !important;
+  }
+
+  .dashboard-charts-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* ── Toast ─────────────────────────────────────────────── */
+
 /* Toast */
 #toast {
   position: fixed; bottom: 24px; right: 24px;

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import type { Page } from '../types';
 import { useFinanceStore } from '../store/useFinanceStore';
@@ -17,6 +17,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
   const { signOut } = useClerk();
   const { user } = useUser();
   const transactions = useFinanceStore((s) => s.transactions);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
@@ -30,14 +31,27 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
     { id: 'importar',    icon: '📥', label: 'CSV Itaú' },
   ];
 
+  function navigate(p: Page) {
+    onNavigate(p);
+    setSidebarOpen(false);
+  }
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
+
       {/* Sidebar */}
-      <aside style={{
-        width: 'var(--sidebar)', background: 'var(--surface)',
-        borderRight: '1px solid var(--border)',
-        display: 'flex', flexDirection: 'column', flexShrink: 0, zIndex: 10,
-      }}>
+      <aside
+        className={`app-sidebar${sidebarOpen ? ' open' : ''}`}
+        style={{
+          width: 'var(--sidebar)', background: 'var(--surface)',
+          borderRight: '1px solid var(--border)',
+          display: 'flex', flexDirection: 'column', flexShrink: 0, zIndex: 10,
+        }}
+      >
         {/* Logo */}
         <div style={{
           padding: '20px 20px 16px',
@@ -62,10 +76,10 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
           {navItems.map((item) => (
             <div
               key={item.id}
-              onClick={() => onNavigate(item.id)}
+              onClick={() => navigate(item.id)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '9px 20px', cursor: 'pointer', fontSize: 13.5,
+                padding: '10px 20px', cursor: 'pointer', fontSize: 13.5,
                 color: page === item.id ? 'var(--accent)' : 'var(--muted)',
                 background: page === item.id ? 'rgba(108,99,255,.1)' : 'transparent',
                 borderLeft: page === item.id ? '3px solid var(--accent)' : '3px solid transparent',
@@ -118,23 +132,33 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {/* Header */}
         <header style={{
-          height: 60, background: 'var(--surface)',
+          height: 56, background: 'var(--surface)',
           borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', padding: '0 28px', flexShrink: 0,
+          justifyContent: 'space-between', flexShrink: 0,
         }}>
-          <div style={{ fontSize: 17, fontWeight: 700 }}>{title}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 12, color: 'var(--muted)' }}>{today}</span>
+          <div className="app-header-padding" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 28px', flex: 1, minWidth: 0 }}>
+            {/* Hamburger */}
+            <button
+              className="hamburger-btn"
+              onClick={() => setSidebarOpen(o => !o)}
+              aria-label="Abrir menu"
+            >☰</button>
+
+            <div style={{ fontSize: 16, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{title}</div>
+          </div>
+
+          <div className="app-header-padding" style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 28px', flexShrink: 0 }}>
+            <span className="header-date" style={{ fontSize: 12, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{today}</span>
             {actions}
           </div>
         </header>
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
+        <div className="app-content-area" style={{ flex: 1, overflowY: 'auto', padding: 28 }}>
           {children}
         </div>
       </main>

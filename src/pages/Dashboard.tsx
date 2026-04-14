@@ -90,7 +90,7 @@ export function Dashboard() {
       </div>
 
       {/* Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+      <div className="dashboard-charts-grid">
         <div style={card}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4 }}>Gastos por Mês</div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>Receitas × Despesas</div>

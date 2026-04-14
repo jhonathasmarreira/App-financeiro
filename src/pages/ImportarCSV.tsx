@@ -14,15 +14,34 @@ interface PreviewRow {
 }
 
 function parseValor(v: string): number {
-  const s = String(v).trim();
-  if (s.includes(',') && s.includes('.')) return parseFloat(s.replace(/\./g, '').replace(',', '.'));
-  if (s.includes(',')) return parseFloat(s.replace(',', '.'));
-  return parseFloat(s) || 0;
+  const s = String(v).trim().replace(/\s/g, '');
+  // Remove símbolo de moeda se houver
+  const clean = s.replace(/^[R$\s]+/, '');
+  if (clean.includes(',') && clean.includes('.')) return parseFloat(clean.replace(/\./g, '').replace(',', '.'));
+  if (clean.includes(',')) return parseFloat(clean.replace(',', '.'));
+  return parseFloat(clean) || 0;
+}
+
+/** Converte DD/MM/YYYY → YYYY-MM-DD. Retorna o original se já estiver no formato correto. */
+function parseItauDate(dateStr: string): string {
+  const s = String(dateStr).trim();
+  const brMatch = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+  return s;
 }
 
 function extractParcela(desc: string): string {
   const m = desc.match(/(\d{1,2})\/(\d{1,2})\s*$/) || desc.match(/(\d{1,2})\s+de\s+(\d{1,2})\s*$/i);
   return m ? String(+m[1]).padStart(2,'0') + '/' + String(+m[2]).padStart(2,'0') : '';
+}
+
+/** Extrai o valor de um campo a partir de múltiplas variações de nome de coluna */
+function col(row: Record<string, string>, ...keys: string[]): string {
+  for (const k of keys) {
+    if (row[k] !== undefined && row[k] !== null) return String(row[k]);
+  }
+  return '';
 }
 
 export function ImportarCSV({ onImported }: { onImported: () => void }) {
@@ -31,30 +50,77 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
   const [faturaMonth, setFaturaMonth] = useState(new Date().toISOString().slice(0,7));
   const [importing, setImporting] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [parseError, setParseError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
   function processFile(file: File | null) {
     if (!file) return;
+    setParseError('');
+
+    // Tenta parsear com a encoding ISO-8859-1 (padrão Itaú) e também UTF-8
+    tryParse(file, 'ISO-8859-1');
+  }
+
+  function tryParse(file: File, encoding: string) {
     Papa.parse(file, {
       header: true,
-      skipEmptyLines: true,
+      skipEmptyLines: 'greedy',
+      encoding,
       complete(res) {
-        const rows: PreviewRow[] = (res.data as Record<string, string>[]).map((r) => {
-          const desc = (r['lançamento'] || r['lancamento'] || r['Lançamento'] || r['LANCAMENTO'] || r['descricao'] || '').trim();
-          const rawVal = (r.valor || r.Valor || r.VALOR || '0').toString();
+        const data = res.data as Record<string, string>[];
+
+        const rows: PreviewRow[] = data.map((r) => {
+          // Suporta múltiplas variações de nome de coluna do Itaú e outros bancos
+          const desc = col(r,
+            'lançamento', 'lancamento', 'Lançamento', 'Lancamento',
+            'LANÇAMENTO', 'LANCAMENTO', 'descricao', 'Descricao',
+            'DESCRICAO', 'descrição', 'Descrição', 'historico',
+            'Historico', 'HISTORICO', 'memo', 'Memo',
+          ).trim();
+
+          const rawVal = col(r,
+            'valor', 'Valor', 'VALOR',
+            'valor (r$)', 'Valor (R$)', 'VALOR (R$)',
+            'amount', 'Amount',
+          ) || '0';
+
+          const dateRaw = col(r,
+            'data', 'Data', 'DATA',
+            'data compra', 'Data Compra', 'DATA COMPRA',
+            'date', 'Date', 'DATE',
+          ).trim();
+
           const amount = Math.abs(parseValor(rawVal));
           const isNeg = parseValor(rawVal) < 0;
           const parcela = extractParcela(desc);
+
           return {
-            date: (r.data || r.Data || r.DATA || '').trim(),
+            date: parseItauDate(dateRaw),
             description: desc,
             amount,
             parcela,
+            // No Itaú: positivo = débito (expense), negativo = pagamento/estorno (income)
             type: (isNeg ? 'income' : 'expense') as Transaction['type'],
             data_fatura: faturaMonth ? `${faturaMonth}-01` : '',
           };
-        }).filter(r => r.date && r.description);
+        }).filter(r => r.date && r.description && r.amount > 0);
+
+        if (rows.length === 0) {
+          // Se não encontrou nada com ISO-8859-1, tenta UTF-8
+          if (encoding === 'ISO-8859-1') {
+            tryParse(file, 'UTF-8');
+          } else {
+            setParseError(
+              'Nenhuma linha válida encontrada. Verifique se o arquivo é um CSV do Itaú com as colunas: data, lançamento, valor.'
+            );
+          }
+          return;
+        }
+
         setPreview(rows);
+      },
+      error(err) {
+        setParseError(`Erro ao ler o arquivo: ${err.message}`);
       },
     });
   }
@@ -71,10 +137,14 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       parcela: r.parcela,
       data_fatura: r.data_fatura,
     }));
-    await addTransactions(items);
+    const count = await addTransactions(items);
     setPreview([]);
     setImporting(false);
-    onImported();
+    if (count > 0) {
+      onImported();
+    } else {
+      setParseError('Erro ao salvar os registros. Verifique sua conexão e tente novamente.');
+    }
   }
 
   const card = { background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 20 };
@@ -85,9 +155,11 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Importar Fatura CSV — Itaú</div>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
           O arquivo deve ter as colunas: <strong style={{ color: 'var(--text)' }}>data, lançamento, valor</strong>
+          <br />
+          <span style={{ fontSize: 12 }}>Datas no formato DD/MM/AAAA são convertidas automaticamente.</span>
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
           <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap' }}>📅 Mês da Fatura</label>
           <input type="month" value={faturaMonth} onChange={e => setFaturaMonth(e.target.value)}
             style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
@@ -100,16 +172,25 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           onDrop={e => { e.preventDefault(); setDragging(false); processFile(e.dataTransfer.files[0]); }}
           style={{
             border: `2px dashed ${dragging ? 'var(--accent)' : 'var(--border)'}`,
-            borderRadius: 'var(--radius)', padding: '50px 40px',
+            borderRadius: 'var(--radius)', padding: '40px 24px',
             textAlign: 'center', cursor: 'pointer',
             background: dragging ? 'rgba(108,99,255,.05)' : 'var(--surface)',
             transition: 'all .2s',
           }}>
-          <div style={{ fontSize: 44, marginBottom: 10 }}>📁</div>
-          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>Arraste o CSV aqui ou clique para selecionar</div>
-          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Formato aceito: .csv · Separador vírgula</div>
+          <div style={{ fontSize: 40, marginBottom: 10 }}>📁</div>
+          <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 6 }}>Arraste o CSV aqui ou clique para selecionar</div>
+          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Formato aceito: .csv · Separador vírgula ou ponto-e-vírgula</div>
         </div>
-        <input ref={fileRef} type="file" accept=".csv" style={{ display: 'none' }} onChange={e => processFile(e.target.files?.[0] ?? null)} />
+        <input
+          ref={fileRef} type="file" accept=".csv" style={{ display: 'none' }}
+          onChange={e => { processFile(e.target.files?.[0] ?? null); e.target.value = ''; }}
+        />
+
+        {parseError && (
+          <div style={{ marginTop: 14, background: 'rgba(255,77,109,.12)', border: '1px solid var(--danger)', borderRadius: 8, padding: '10px 14px', fontSize: 13, color: 'var(--danger)' }}>
+            ⚠️ {parseError}
+          </div>
+        )}
       </div>
 
       {preview.length > 0 && (
@@ -117,12 +198,12 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>
             Pré-visualização — <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: 12 }}>{preview.length} registros</span>
           </div>
-          <div style={{ maxHeight: 320, overflowY: 'auto', border: '1px solid var(--border)', borderRadius: 8 }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <div style={{ maxHeight: 320, overflowY: 'auto', overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 8 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 520 }}>
               <thead>
                 <tr style={{ background: 'var(--surface2)' }}>
                   {['#','Data','Lançamento','Parcela','Valor','Tipo'].map(h => (
-                    <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', borderBottom: '1px solid var(--border)' }}>{h}</th>
+                    <th key={h} style={{ padding: '9px 12px', textAlign: 'left', fontSize: 11, color: 'var(--muted)', fontWeight: 700, textTransform: 'uppercase', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -130,13 +211,13 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
                 {preview.map((r, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
                     <td style={{ padding: '9px 12px', color: 'var(--muted)' }}>{i+1}</td>
-                    <td style={{ padding: '9px 12px' }}>{formatDate(r.date)}</td>
+                    <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>{formatDate(r.date)}</td>
                     <td style={{ padding: '9px 12px' }}>{r.description}</td>
                     <td style={{ padding: '9px 12px', color: 'var(--accent)', fontWeight: 700 }}>{r.parcela || '—'}</td>
-                    <td style={{ padding: '9px 12px', fontWeight: 700, color: r.type==='income'?'var(--success)':'var(--danger)' }}>
+                    <td style={{ padding: '9px 12px', fontWeight: 700, color: r.type==='income'?'var(--success)':'var(--danger)', whiteSpace: 'nowrap' }}>
                       {r.type==='income'?'−':''}{formatCurrency(r.amount)}
                     </td>
-                    <td style={{ padding: '9px 12px' }}>
+                    <td style={{ padding: '9px 12px', whiteSpace: 'nowrap' }}>
                       {r.type==='income'
                         ? <span style={{ background:'rgba(67,217,173,.15)',color:'var(--success)',padding:'2px 8px',borderRadius:20,fontSize:11,fontWeight:700 }}>💚 Pagamento</span>
                         : r.parcela
@@ -148,7 +229,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
               </tbody>
             </table>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button onClick={() => setPreview([])} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
             <button onClick={handleImport} disabled={importing}
               style={{ background: 'var(--accent)', border: 'none', color: '#fff', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, opacity: importing ? .7 : 1 }}>
