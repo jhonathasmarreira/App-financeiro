@@ -13,7 +13,7 @@ interface FinanceState {
   setToken: (token: string) => void;
   loadTransactions: (userId: string) => Promise<void>;
   addTransaction: (data: Omit<Transaction, 'id' | 'createdAt'>) => Promise<void>;
-  addTransactions: (items: Omit<Transaction, 'id' | 'createdAt'>[]) => Promise<number>;
+  addTransactions: (items: Omit<Transaction, 'id' | 'createdAt'>[]) => Promise<{ count: number; error?: string }>;
   removeTransaction: (id: string) => Promise<void>;
   updateTransaction: (id: string, data: Partial<Omit<Transaction, 'id' | 'createdAt'>>) => Promise<void>;
 }
@@ -78,7 +78,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
 
   addTransactions: async (items) => {
     const { userId } = get();
-    if (!userId) return 0;
+    if (!userId) return { count: 0, error: 'Usuário não autenticado.' };
     const rows = items.map((data) => {
       const id = uuidv4();
       return {
@@ -100,12 +100,12 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
     set((s) => ({ transactions: [...newTxs, ...s.transactions] }));
     const { error } = await _client.from('transactions').insert(rows);
     if (error) {
-      console.error('Erro ao importar:', error.message);
+      console.error('Erro ao importar:', error.message, error.details, error.hint);
       const ids = new Set(rows.map((r) => r.id));
       set((s) => ({ transactions: s.transactions.filter((t) => !ids.has(t.id)) }));
-      return 0;
+      return { count: 0, error: error.message + (error.hint ? ` — ${error.hint}` : '') };
     }
-    return rows.length;
+    return { count: rows.length };
   },
 
   removeTransaction: async (id) => {

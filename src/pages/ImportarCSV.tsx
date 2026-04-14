@@ -180,13 +180,13 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       parcela: r.parcela,
       data_fatura: r.data_fatura,
     }));
-    const count = await addTransactions(items);
-    setPreview([]);
+    const { count, error } = await addTransactions(items);
     setImporting(false);
     if (count > 0) {
+      setPreview([]);
       onImported();
     } else {
-      setParseError('Erro ao salvar os registros. Verifique sua conexão e tente novamente.');
+      setParseError(`Erro ao salvar: ${error ?? 'erro desconhecido'}`);
     }
   }
 
