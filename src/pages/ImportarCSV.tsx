@@ -22,12 +22,55 @@ function parseValor(v: string): number {
   return parseFloat(clean) || 0;
 }
 
-/** Converte DD/MM/YYYY → YYYY-MM-DD. Retorna o original se já estiver no formato correto. */
-function parseItauDate(dateStr: string): string {
+const PT_MONTHS: Record<string, string> = {
+  jan:'01', fev:'02', mar:'03', abr:'04', mai:'05', jun:'06',
+  jul:'07', ago:'08', set:'09', out:'10', nov:'11', dez:'12',
+};
+
+/**
+ * Infere o ano considerando que datas de meses futuros ao mês da fatura
+ * pertencem ao ano anterior (ex: fatura março/2026, data novembro → 2025).
+ */
+function inferYear(monthNum: number, faturaMonth: string): string {
+  const faturaYear = parseInt(faturaMonth.slice(0, 4));
+  const faturaMonthNum = parseInt(faturaMonth.slice(5, 7));
+  return (monthNum > faturaMonthNum + 1 ? faturaYear - 1 : faturaYear).toString();
+}
+
+/**
+ * Converte vários formatos de data do Itaú para YYYY-MM-DD:
+ *   DD/MM/YYYY  → 14/11/2026
+ *   DD/MM       → 14/11  (sem ano — usa mês da fatura)
+ *   DD/MMM      → 14/nov (sem ano — usa mês da fatura)
+ *   YYYY-MM-DD  → já correto
+ */
+function parseItauDate(dateStr: string, faturaMonth: string): string {
   const s = String(dateStr).trim();
-  const brMatch = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`;
+
+  // DD/MM/YYYY
+  const full = s.match(/^(\d{1,2})\/(\d{2})\/(\d{4})$/);
+  if (full) return `${full[3]}-${full[2].padStart(2,'0')}-${full[1].padStart(2,'0')}`;
+
+  // YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+
+  // DD/MMM  (ex: 14/nov)
+  const abbr = s.toLowerCase().match(/^(\d{1,2})\/([a-z]{3})$/);
+  if (abbr) {
+    const month = PT_MONTHS[abbr[2]];
+    if (month) {
+      const year = inferYear(parseInt(month), faturaMonth);
+      return `${year}-${month}-${abbr[1].padStart(2,'0')}`;
+    }
+  }
+
+  // DD/MM  (ex: 14/11 — sem ano)
+  const short = s.match(/^(\d{1,2})\/(\d{2})$/);
+  if (short) {
+    const year = inferYear(parseInt(short[2]), faturaMonth);
+    return `${year}-${short[2]}-${short[1].padStart(2,'0')}`;
+  }
+
   return s;
 }
 
@@ -95,7 +138,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           const parcela = extractParcela(desc);
 
           return {
-            date: parseItauDate(dateRaw),
+            date: parseItauDate(dateRaw, faturaMonth),
             description: desc,
             amount,
             parcela,
