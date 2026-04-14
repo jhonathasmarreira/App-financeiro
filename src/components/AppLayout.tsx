@@ -49,7 +49,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
         style={{
           width: 'var(--sidebar)', background: 'var(--surface)',
           borderRight: '1px solid var(--border)',
-          display: 'flex', flexDirection: 'column', flexShrink: 0, zIndex: 10,
+          display: 'flex', flexDirection: 'column', flexShrink: 0,
         }}
       >
         {/* Logo */}
