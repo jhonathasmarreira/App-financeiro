@@ -237,7 +237,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       </div>
 
       {preview.length > 0 && (
-        <div style={card}>
+        <div className="csv-preview-padding" style={card}>
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>
             Pré-visualização — <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: 12 }}>{preview.length} registros</span>
           </div>
