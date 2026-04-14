@@ -241,7 +241,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 16 }}>
             Pré-visualização — <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: 12 }}>{preview.length} registros</span>
           </div>
-          <div style={{ maxHeight: 320, overflowY: 'auto', overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 8 }}>
+          <div className="csv-preview-table" style={{ maxHeight: 320, overflowY: 'auto', overflowX: 'auto', border: '1px solid var(--border)', borderRadius: 8 }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 520 }}>
               <thead>
                 <tr style={{ background: 'var(--surface2)' }}>
@@ -272,7 +272,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
               </tbody>
             </table>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
+          <div className="csv-action-buttons" style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 16, flexWrap: 'wrap' }}>
             <button onClick={() => setPreview([])} style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text)', padding: '8px 18px', borderRadius: 8, cursor: 'pointer', fontSize: 13 }}>Cancelar</button>
             <button onClick={handleImport} disabled={importing}
               style={{ background: 'var(--accent)', border: 'none', color: '#fff', padding: '8px 20px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600, opacity: importing ? .7 : 1 }}>
