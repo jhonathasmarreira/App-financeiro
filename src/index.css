@@ -154,7 +154,7 @@ input::placeholder { color: var(--muted); }
   }
 
   .app-content-area {
-    padding: 14px !important;
+    padding: 14px 14px 80px !important;
   }
 
   .app-header-padding {
