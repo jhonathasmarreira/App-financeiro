@@ -192,7 +192,7 @@ input::placeholder { color: var(--muted); }
   }
 
   .csv-preview-padding {
-    padding-bottom: 80px;
+    padding-bottom: 100px;
   }
 }
 
