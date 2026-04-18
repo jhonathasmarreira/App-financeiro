@@ -186,7 +186,9 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       setPreview([]);
       onImported();
     } else {
-      setParseError(`Erro ao salvar: ${error ?? 'erro desconhecido'}`);
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const urlInfo = supabaseUrl ? `URL: ${supabaseUrl.slice(0, 40)}...` : 'URL do Supabase não configurada!';
+      setParseError(`Erro ao salvar: ${error ?? 'erro desconhecido'} | ${urlInfo}`);
     }
   }
 

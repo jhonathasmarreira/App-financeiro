@@ -100,10 +100,16 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
     set((s) => ({ transactions: [...newTxs, ...s.transactions] }));
     const { error } = await _client.from('transactions').insert(rows);
     if (error) {
-      console.error('Erro ao importar:', error.message, error.details, error.hint);
+      const msg = [
+        error.message,
+        error.details  ? `Detalhes: ${error.details}`  : '',
+        error.hint     ? `Dica: ${error.hint}`          : '',
+        error.code     ? `Código: ${error.code}`        : '',
+      ].filter(Boolean).join(' | ');
+      console.error('Erro ao importar:', msg);
       const ids = new Set(rows.map((r) => r.id));
       set((s) => ({ transactions: s.transactions.filter((t) => !ids.has(t.id)) }));
-      return { count: 0, error: error.message + (error.hint ? ` — ${error.hint}` : '') };
+      return { count: 0, error: msg };
     }
     return { count: rows.length };
   },
