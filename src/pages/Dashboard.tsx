@@ -149,9 +149,6 @@ export function Dashboard() {
         )}
       </div>
 
-      {/* FAB mobile */}
-      <button className="fab-btn" onClick={() => setModalOpen(true)} aria-label="Nova Transação">+</button>
-
       {modalOpen && <TransactionModal onClose={() => setModalOpen(false)} />}
     </div>
   );

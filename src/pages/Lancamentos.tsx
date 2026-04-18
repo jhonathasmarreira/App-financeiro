@@ -63,6 +63,10 @@ export function Lancamentos() {
 
   const allSelected = filtered.length > 0 && filtered.every(t => selected.has(t.id));
 
+  const totalCreditos  = useMemo(() => filtered.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0), [filtered]);
+  const totalPagamentos = useMemo(() => filtered.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0), [filtered]);
+  const saldo = totalPagamentos - totalCreditos;
+
   function toggleOne(id: string) {
     setSelected(prev => {
       const next = new Set(prev);
@@ -122,6 +126,20 @@ export function Lancamentos() {
           <option value="expense">💳 Crédito</option>
           <option value="parcela">🔄 Parcela</option>
         </select>
+      </div>
+
+      {/* Totalizador */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 12 }}>
+        {[
+          { label: 'Créditos', value: totalCreditos, color: 'var(--danger)' },
+          { label: 'Pagamentos', value: totalPagamentos, color: 'var(--success)' },
+          { label: 'Saldo', value: Math.abs(saldo), color: saldo >= 0 ? 'var(--success)' : 'var(--danger)' },
+        ].map(({ label, value, color }) => (
+          <div key={label} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 12px' }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontSize: 14, fontWeight: 800, color }}>{formatCurrency(value)}</div>
+          </div>
+        ))}
       </div>
 
       {/* Bulk action bar */}

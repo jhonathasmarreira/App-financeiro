@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useClerk, useUser } from '@clerk/clerk-react';
 import type { Page } from '../types';
 import { useFinanceStore } from '../store/useFinanceStore';
+import { TransactionModal } from './TransactionModal';
 
 const COLORS = ['#6c63ff','#ff6584','#43d9ad','#ffb347','#4fc3f7'];
 
@@ -18,6 +19,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
   const { user } = useUser();
   const transactions = useFinanceStore((s) => s.transactions);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [fabOpen, setFabOpen] = useState(false);
 
   const today = new Date().toLocaleDateString('pt-BR', {
     weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
@@ -162,6 +164,10 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
           {children}
         </div>
       </main>
+
+      {/* FAB — sempre visível no mobile */}
+      <button className="fab-btn" onClick={() => setFabOpen(true)} aria-label="Nova Transação">+</button>
+      {fabOpen && <TransactionModal onClose={() => setFabOpen(false)} />}
     </div>
   );
 }
