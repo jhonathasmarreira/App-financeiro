@@ -38,13 +38,13 @@ function inferYear(monthNum: number, faturaMonth: string): string {
 }
 
 /**
- * Converte vários formatos de data do Itaú para YYYY-MM-DD:
+ * Converte vários formatos de data para YYYY-MM-DD:
  *   DD/MM/YYYY  → 14/11/2026
  *   DD/MM       → 14/11  (sem ano — usa mês da fatura)
  *   DD/MMM      → 14/nov (sem ano — usa mês da fatura)
  *   YYYY-MM-DD  → já correto
  */
-function parseItauDate(dateStr: string, faturaMonth: string): string {
+function parseDate(dateStr: string, faturaMonth: string): string {
   const s = String(dateStr).trim();
 
   // DD/MM/YYYY
@@ -101,7 +101,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
     if (!file) return;
     setParseError('');
 
-    // Tenta parsear com a encoding ISO-8859-1 (padrão Itaú) e também UTF-8
+    // Tenta parsear com a encoding ISO-8859-1 e também UTF-8
     tryParse(file, 'ISO-8859-1');
   }
 
@@ -114,7 +114,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
         const data = res.data as Record<string, string>[];
 
         const rows: PreviewRow[] = data.map((r) => {
-          // Suporta múltiplas variações de nome de coluna do Itaú e outros bancos
+          // Suporta múltiplas variações de nome de coluna
           const desc = col(r,
             'lançamento', 'lancamento', 'Lançamento', 'Lancamento',
             'LANÇAMENTO', 'LANCAMENTO', 'descricao', 'Descricao',
@@ -140,11 +140,11 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           const parcela = parcelaCol || extractParcela(desc);
 
           return {
-            date: parseItauDate(dateRaw, faturaMonth),
+            date: parseDate(dateRaw, faturaMonth),
             description: desc,
             amount,
             parcela,
-            // No Itaú: positivo = débito (expense), negativo = pagamento/estorno (income)
+            // Positivo = débito (expense), negativo = pagamento/estorno (income)
             type: (isNeg ? 'income' : 'expense') as Transaction['type'],
             data_fatura: faturaMonth ? `${faturaMonth}-01` : '',
           };
@@ -156,7 +156,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
             tryParse(file, 'UTF-8');
           } else {
             setParseError(
-              'Nenhuma linha válida encontrada. Verifique se o arquivo é um CSV do Itaú com as colunas: data, lançamento, valor.'
+              'Nenhuma linha válida encontrada. Verifique se o arquivo CSV contém as colunas: data, lançamento (ou descrição), valor.'
             );
           }
           return;
@@ -200,7 +200,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <div style={card}>
-        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Importar Fatura CSV — Itaú</div>
+        <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Importar Fatura CSV</div>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
           Colunas obrigatórias: <strong style={{ color: 'var(--text)' }}>data, lançamento, valor</strong> — opcional: <strong style={{ color: 'var(--text)' }}>parcela</strong>
           <br />
