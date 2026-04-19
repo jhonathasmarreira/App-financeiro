@@ -196,6 +196,32 @@ input::placeholder { color: var(--muted); }
   }
 }
 
+/* Mobile filter button — hidden on desktop */
+.lancamentos-filter-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .lancamentos-filter-btn {
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .lancamentos-filters-bar {
+    display: none !important;
+  }
+}
+
 /* ── Toast ─────────────────────────────────────────────── */
 
 /* Toast */

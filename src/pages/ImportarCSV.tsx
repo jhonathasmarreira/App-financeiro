@@ -91,6 +91,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
   const { addTransactions } = useFinanceStore();
   const [preview, setPreview] = useState<PreviewRow[]>([]);
   const [faturaMonth, setFaturaMonth] = useState(new Date().toISOString().slice(0,7));
+  const [cartao, setCartao] = useState('');
   const [importing, setImporting] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [parseError, setParseError] = useState('');
@@ -135,7 +136,8 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
 
           const amount = Math.abs(parseValor(rawVal));
           const isNeg = parseValor(rawVal) < 0;
-          const parcela = extractParcela(desc);
+          const parcelaCol = col(r, 'parcela', 'Parcela', 'PARCELA').trim();
+          const parcela = parcelaCol || extractParcela(desc);
 
           return {
             date: parseItauDate(dateRaw, faturaMonth),
@@ -179,6 +181,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       date: r.date,
       parcela: r.parcela,
       data_fatura: r.data_fatura,
+      cartao: cartao.trim(),
     }));
     const { count, error } = await addTransactions(items);
     setImporting(false);
@@ -199,15 +202,23 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
       <div style={card}>
         <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 8 }}>Importar Fatura CSV — Itaú</div>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
-          O arquivo deve ter as colunas: <strong style={{ color: 'var(--text)' }}>data, lançamento, valor</strong>
+          Colunas obrigatórias: <strong style={{ color: 'var(--text)' }}>data, lançamento, valor</strong> — opcional: <strong style={{ color: 'var(--text)' }}>parcela</strong>
           <br />
           <span style={{ fontSize: 12 }}>Datas no formato DD/MM/AAAA são convertidas automaticamente.</span>
         </p>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em', whiteSpace: 'nowrap' }}>📅 Mês da Fatura</label>
-          <input type="month" value={faturaMonth} onChange={e => setFaturaMonth(e.target.value)}
-            style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>📅 Mês da Fatura</label>
+            <input type="month" value={faturaMonth} onChange={e => setFaturaMonth(e.target.value)}
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>💳 Nome do Cartão</label>
+            <input type="text" value={cartao} onChange={e => setCartao(e.target.value)}
+              placeholder="Ex: Cartão Nubank"
+              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
+          </div>
         </div>
 
         <div

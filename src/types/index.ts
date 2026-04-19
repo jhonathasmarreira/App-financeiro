@@ -34,6 +34,7 @@ export interface Transaction {
   createdAt: string;
   parcela?: string;      // ex: "01/12"
   data_fatura?: string;  // YYYY-MM-DD (billing date)
+  cartao?: string;       // ex: "Cartão Nubank"
 }
 
 export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'importar';

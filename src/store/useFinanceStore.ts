@@ -3,7 +3,6 @@ import { supabase, createAuthClient } from '../lib/supabase';
 import { v4 as uuidv4 } from '../utils/uuid';
 import type { Transaction } from '../types';
 
-// Authenticated Supabase client — replaced once the Clerk JWT is available
 let _client = supabase;
 
 interface FinanceState {
@@ -23,36 +22,22 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
   loading: false,
   userId: null,
 
-  setToken: (token) => {
-    _client = createAuthClient(token);
-  },
+  setToken: (token) => { _client = createAuthClient(token); },
 
   loadTransactions: async (userId) => {
     set({ loading: true, userId });
     const { data, error } = await _client
-      .from('transactions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false });
+      .from('transactions').select('*')
+      .eq('user_id', userId).order('date', { ascending: false });
 
-    if (error) {
-      console.error('Erro ao carregar:', error.message);
-      set({ loading: false });
-      return;
-    }
+    if (error) { console.error('Erro ao carregar:', error.message); set({ loading: false }); return; }
 
     const mapped: Transaction[] = (data ?? []).map((r) => ({
-      id: r.id,
-      type: r.type,
-      description: r.description,
-      amount: Number(r.amount),
-      category: r.category,
-      date: r.date,
-      createdAt: r.created_at,
-      parcela: r.parcela || '',
-      data_fatura: r.data_fatura || '',
+      id: r.id, type: r.type, description: r.description,
+      amount: Number(r.amount), category: r.category, date: r.date,
+      createdAt: r.created_at, parcela: r.parcela || '',
+      data_fatura: r.data_fatura || '', cartao: r.cartao || '',
     }));
-
     set({ transactions: mapped, loading: false });
   },
 
@@ -65,10 +50,9 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
     const { error } = await _client.from('transactions').insert({
       id, user_id: userId,
       type: data.type, description: data.description,
-      amount: data.amount, category: data.category,
-      date: data.date,
-      parcela: data.parcela || '',
-      data_fatura: data.data_fatura || null,
+      amount: data.amount, category: data.category, date: data.date,
+      parcela: data.parcela || '', data_fatura: data.data_fatura || null,
+      cartao: data.cartao || '',
     });
     if (error) {
       console.error('Erro ao salvar:', error.message);
@@ -84,10 +68,9 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
       return {
         id, user_id: userId,
         type: data.type, description: data.description,
-        amount: data.amount, category: data.category,
-        date: data.date,
-        parcela: data.parcela || '',
-        data_fatura: data.data_fatura || null,
+        amount: data.amount, category: data.category, date: data.date,
+        parcela: data.parcela || '', data_fatura: data.data_fatura || null,
+        cartao: data.cartao || '',
       };
     });
     const newTxs: Transaction[] = rows.map((r) => ({
@@ -96,15 +79,16 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
       category: r.category as Transaction['category'],
       date: r.date, createdAt: new Date().toISOString(),
       parcela: r.parcela, data_fatura: r.data_fatura || '',
+      cartao: r.cartao || '',
     }));
     set((s) => ({ transactions: [...newTxs, ...s.transactions] }));
     const { error } = await _client.from('transactions').insert(rows);
     if (error) {
       const msg = [
         error.message,
-        error.details  ? `Detalhes: ${error.details}`  : '',
-        error.hint     ? `Dica: ${error.hint}`          : '',
-        error.code     ? `Código: ${error.code}`        : '',
+        error.details ? `Detalhes: ${error.details}` : '',
+        error.hint    ? `Dica: ${error.hint}`         : '',
+        error.code    ? `Código: ${error.code}`       : '',
       ].filter(Boolean).join(' | ');
       console.error('Erro ao importar:', msg);
       const ids = new Set(rows.map((r) => r.id));
@@ -128,7 +112,7 @@ export const useFinanceStore = create<FinanceState>()((set, get) => ({
       type: data.type, description: data.description,
       amount: data.amount, category: data.category,
       date: data.date, parcela: data.parcela,
-      data_fatura: data.data_fatura || null,
+      data_fatura: data.data_fatura || null, cartao: data.cartao || '',
     }).eq('id', id);
     if (error) { console.error('Erro ao atualizar:', error.message); set({ transactions: prev }); }
   },

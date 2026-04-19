@@ -28,6 +28,8 @@ export function TransactionModal({ onClose, editing }: Props) {
   const [amount, setAmount]         = useState(editing ? String(editing.amount) : '');
   const [category, setCategory]     = useState<Category>(editing?.category ?? 'Outros (Despesa)');
   const [date, setDate]             = useState(editing?.date ?? today);
+  const [cartao, setCartao]         = useState(editing?.cartao ?? '');
+  const [parcela, setParcela]       = useState(editing?.parcela ?? '');
   const [errors, setErrors]         = useState<Record<string, string>>({});
 
   const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -51,9 +53,9 @@ export function TransactionModal({ onClose, editing }: Props) {
     if (Object.keys(errs).length) { setErrors(errs); return; }
     const val = parseFloat(amount.replace(',', '.'));
     if (editing) {
-      updateTransaction(editing.id, { type, description: description.trim(), amount: val, category, date });
+      updateTransaction(editing.id, { type, description: description.trim(), amount: val, category, date, cartao: cartao.trim(), parcela: type === 'expense' ? parcela.trim() : '' });
     } else {
-      addTransaction({ type, description: description.trim(), amount: val, category, date });
+      addTransaction({ type, description: description.trim(), amount: val, category, date, cartao: cartao.trim(), parcela: type === 'expense' ? parcela.trim() : '' });
     }
     onClose();
   }
@@ -122,6 +124,20 @@ export function TransactionModal({ onClose, editing }: Props) {
             <input style={inp} type="date" value={date} onChange={e => setDate(e.target.value)} />
             {errors.date && <p style={{ fontSize: 12, color: 'var(--danger)', marginTop: 4 }}>{errors.date}</p>}
           </div>
+
+          <div>
+            <label style={lbl}>Cartão (opcional)</label>
+            <input style={inp} type="text" value={cartao}
+              onChange={e => setCartao(e.target.value)} placeholder="Ex: Cartão Nubank" />
+          </div>
+
+          {type === 'expense' && (
+            <div>
+              <label style={lbl}>Parcela (opcional)</label>
+              <input style={inp} type="text" value={parcela}
+                onChange={e => setParcela(e.target.value)} placeholder="Ex: 01/12" />
+            </div>
+          )}
 
           <button type="submit" style={{
             background: 'var(--accent)', border: 'none', color: '#fff',
