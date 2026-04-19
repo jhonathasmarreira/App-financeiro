@@ -204,7 +204,7 @@ export function Lancamentos() {
                     <input type="checkbox" checked={allSelected} onChange={toggleAll}
                       style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--accent)' }} />
                   </th>
-                  <Th col="date" label="Data" />
+                  <Th col="date" label="Compra / Fatura" />
                   <Th col="description" label="Lançamento" />
                   <Th col="cartao" label="Cartão" />
                   <Th col="parcela" label="Parcela" align="center" />
@@ -228,7 +228,14 @@ export function Lancamentos() {
                         <input type="checkbox" checked={isSel} onChange={() => toggleOne(t.id)}
                           style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--accent)' }} />
                       </td>
-                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{formatDate(t.date)}</td>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
+                        <div>{formatDate(t.date)}</div>
+                        {t.data_fatura && (
+                          <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
+                            Fat: {t.data_fatura.slice(0,7).split('-').reverse().join('/')}
+                          </div>
+                        )}
+                      </td>
                       <td style={{ padding: '10px 12px', fontWeight: 500, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.description}</td>
                       <td style={{ padding: '10px 12px', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: t.cartao ? 'var(--text)' : 'var(--border)' }}>{t.cartao || '—'}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'center' }}>

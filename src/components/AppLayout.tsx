@@ -30,7 +30,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
     { id: 'lancamentos', icon: '📋', label: 'Lançamentos' },
     { id: 'parcelas',    icon: '🔄', label: 'Parcelas' },
     { id: 'analise',     icon: '📈', label: 'Análise' },
-    { id: 'importar',    icon: '📥', label: 'CSV Itaú' },
+    { id: 'importar',    icon: '📥', label: 'CSV Fatura' },
   ];
 
   function navigate(p: Page) {
@@ -39,7 +39,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <div className="app-wrapper" style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
@@ -134,9 +134,9 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
       </aside>
 
       {/* Main */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
+      <main className="app-main" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0 }}>
         {/* Header */}
-        <header style={{
+        <header className="app-header" style={{
           height: 56, background: 'var(--surface)',
           borderBottom: '1px solid var(--border)',
           display: 'flex', alignItems: 'center',

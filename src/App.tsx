@@ -15,7 +15,7 @@ const PAGE_TITLES: Record<Page, string> = {
   lancamentos: 'Lançamentos',
   parcelas: 'Parcelas',
   analise: 'Análise',
-  importar: 'CSV Itaú',
+  importar: 'CSV Fatura',
 };
 
 function MainApp() {

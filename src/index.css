@@ -125,7 +125,46 @@ input::placeholder { color: var(--muted); }
   gap: 16px;
 }
 
+/* CSV meta grid (month + card name) — stacks on mobile */
+.csv-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 @media (max-width: 768px) {
+  /* Allow pull-to-refresh: body scrolls, layout adapts */
+  body {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
+  }
+  #root {
+    height: auto;
+    min-height: 100vh;
+  }
+  .app-wrapper {
+    height: auto !important;
+    min-height: 100vh;
+    overflow: visible !important;
+  }
+  .app-main {
+    overflow: visible !important;
+    height: auto !important;
+  }
+  .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-content-area {
+    overflow-y: visible !important;
+    flex: unset !important;
+    height: auto !important;
+    padding: 14px 14px 80px !important;
+  }
+
   .app-sidebar {
     position: fixed !important;
     top: 0;
@@ -153,16 +192,16 @@ input::placeholder { color: var(--muted); }
     display: flex !important;
   }
 
-  .app-content-area {
-    padding: 14px 14px 80px !important;
-  }
-
   .app-header-padding {
     padding: 0 14px !important;
   }
 
   .header-date {
     display: none !important;
+  }
+
+  .csv-meta-grid {
+    grid-template-columns: 1fr;
   }
 
   .dashboard-charts-grid {

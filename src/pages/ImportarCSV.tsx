@@ -207,7 +207,7 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
           <span style={{ fontSize: 12 }}>Datas no formato DD/MM/AAAA são convertidas automaticamente.</span>
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}>
+        <div className="csv-meta-grid">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>📅 Mês da Fatura</label>
             <input type="month" value={faturaMonth} onChange={e => setFaturaMonth(e.target.value)}
