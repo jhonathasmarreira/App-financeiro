@@ -111,7 +111,7 @@ function MainApp() {
 
   return (
     <AppLayout page={page} onNavigate={setPage} title={PAGE_TITLES[page]}>
-      {page === 'dashboard'   && <Dashboard />}
+      {page === 'dashboard'   && <Dashboard onNavigate={setPage} />}
       {page === 'lancamentos' && <Lancamentos />}
       {page === 'parcelas'    && <Parcelas />}
       {page === 'analise'     && <Analise />}
