@@ -22,16 +22,28 @@ export function Dashboard() {
   const transactions = useFinanceStore(s => s.transactions);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(currentMonthKey());
+  const [dateMode, setDateMode] = useState<'fatura' | 'lancamento'>('fatura');
+
+  function switchMode(mode: 'fatura' | 'lancamento') {
+    setDateMode(mode);
+    setSelectedMonth(currentMonthKey());
+  }
 
   const availableMonths = useMemo(() => {
-    const months = new Set(transactions.map(t => toMonthKey(t.date)));
+    const months = new Set(transactions.map(t => {
+      const d = dateMode === 'fatura' && t.data_fatura ? t.data_fatura : t.date;
+      return toMonthKey(d);
+    }));
     const list = Array.from(months).sort().reverse();
     if (!list.includes(currentMonthKey())) list.unshift(currentMonthKey());
     return list;
-  }, [transactions]);
+  }, [transactions, dateMode]);
 
   const filtered = useMemo(() =>
-    transactions.filter(t => toMonthKey(t.date) === selectedMonth), [transactions, selectedMonth]);
+    transactions.filter(t => {
+      const d = dateMode === 'fatura' && t.data_fatura ? t.data_fatura : t.date;
+      return toMonthKey(d) === selectedMonth;
+    }), [transactions, selectedMonth, dateMode]);
 
   const income  = useMemo(() => filtered.filter(t => t.type==='income').reduce((s,t) => s+t.amount, 0), [filtered]);
   const expense = useMemo(() => filtered.filter(t => t.type==='expense').reduce((s,t) => s+t.amount, 0), [filtered]);
@@ -41,7 +53,8 @@ export function Dashboard() {
   const monthlyData = useMemo(() => {
     const map: Record<string, { Receitas: number; Despesas: number }> = {};
     transactions.forEach(t => {
-      const k = toMonthKey(t.date);
+      const d = dateMode === 'fatura' && t.data_fatura ? t.data_fatura : t.date;
+      const k = toMonthKey(d);
       if (!map[k]) map[k] = { Receitas: 0, Despesas: 0 };
       if (t.type==='income') map[k].Receitas += t.amount;
       else map[k].Despesas += t.amount;
@@ -49,7 +62,7 @@ export function Dashboard() {
     return Object.entries(map).sort(([a],[b])=>a.localeCompare(b)).slice(-6).map(([k,v]) => ({
       name: getMonthLabel(k).slice(0,3).toUpperCase(), ...v,
     }));
-  }, [transactions]);
+  }, [transactions, dateMode]);
 
   const catData = useMemo(() => {
     const map: Record<string,number> = {};
@@ -64,21 +77,33 @@ export function Dashboard() {
   const tipStyle = { contentStyle: { background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 10, fontSize: 12 } };
   const axisStyle = { tick: { fill: 'var(--muted)', fontSize: 11 }, axisLine: false as const, tickLine: false as const };
 
-  const btn = (label: string, onClick: () => void, accent = 'var(--accent)') => (
-    <button onClick={onClick} style={{ background: accent, border: 'none', color: '#fff', padding: '7px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
-      {label}
-    </button>
-  );
+  const sel = { background:'var(--surface2)', border:'1px solid var(--border)', color:'var(--text)', padding:'7px 12px', borderRadius:8, fontSize:13 };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Month selector */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, alignItems: 'center' }}>
-        <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)}
-          style={{ background:'var(--surface2)', border:'1px solid var(--border)', color:'var(--text)', padding:'7px 12px', borderRadius:8, fontSize:13 }}>
+      {/* Controles */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* Toggle data fatura / lançamento */}
+        <div style={{ display: 'flex', background: 'var(--surface2)', border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+          {(['fatura', 'lancamento'] as const).map(mode => (
+            <button key={mode} type="button" onClick={() => switchMode(mode)} style={{
+              padding: '7px 14px', fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
+              background: dateMode === mode ? 'var(--accent)' : 'transparent',
+              color: dateMode === mode ? '#fff' : 'var(--muted)', transition: 'all .18s',
+            }}>
+              {mode === 'fatura' ? '📅 Fatura' : '🗓 Lançamento'}
+            </button>
+          ))}
+        </div>
+
+        <select value={selectedMonth} onChange={e=>setSelectedMonth(e.target.value)} style={sel}>
           {availableMonths.map(m => <option key={m} value={m}>{getMonthLabel(m)}</option>)}
         </select>
-        {btn('+ Nova Transação', () => setModalOpen(true))}
+
+        <button className="dashboard-add-btn" onClick={() => setModalOpen(true)}
+          style={{ background:'var(--accent)', border:'none', color:'#fff', padding:'7px 16px', borderRadius:8, fontSize:13, fontWeight:600, cursor:'pointer', marginLeft:'auto' }}>
+          + Nova Transação
+        </button>
       </div>
 
       {/* Stats */}

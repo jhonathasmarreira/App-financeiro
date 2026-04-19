@@ -125,6 +125,16 @@ input::placeholder { color: var(--muted); }
   gap: 16px;
 }
 
+/* Botão Nova Transação do Dashboard — oculto no mobile (FAB global já cobre) */
+.dashboard-add-btn {
+  display: flex;
+}
+@media (max-width: 768px) {
+  .dashboard-add-btn {
+    display: none !important;
+  }
+}
+
 /* CSV meta grid (month + card name) — stacks on mobile */
 .csv-meta-grid {
   display: grid;
