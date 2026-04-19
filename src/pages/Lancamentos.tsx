@@ -197,14 +197,15 @@ export function Lancamentos() {
           </div>
         ) : (
           <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 740 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13, minWidth: 860 }}>
               <thead>
                 <tr style={{ background: 'var(--surface2)' }}>
                   <th style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', width: 36 }}>
                     <input type="checkbox" checked={allSelected} onChange={toggleAll}
                       style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--accent)' }} />
                   </th>
-                  <Th col="date" label="Compra / Fatura" />
+                  <Th col="fatura" label="Fatura" />
+                  <Th col="date" label="Compra" />
                   <Th col="description" label="Lançamento" />
                   <Th col="cartao" label="Cartão" />
                   <Th col="parcela" label="Parcela" align="center" />
@@ -215,7 +216,7 @@ export function Lancamentos() {
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={8} style={{ textAlign: 'center', padding: 32, color: 'var(--muted)' }}>Nenhum resultado para os filtros.</td></tr>
+                  <tr><td colSpan={9} style={{ textAlign: 'center', padding: 32, color: 'var(--muted)' }}>Nenhum resultado para os filtros.</td></tr>
                 ) : filtered.map((t) => {
                   const today = new Date().toISOString().slice(0,10);
                   const future = !!t.parcela && t.date > today;
@@ -228,14 +229,12 @@ export function Lancamentos() {
                         <input type="checkbox" checked={isSel} onChange={() => toggleOne(t.id)}
                           style={{ cursor: 'pointer', width: 15, height: 15, accentColor: 'var(--accent)' }} />
                       </td>
-                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
-                        <div>{formatDate(t.date)}</div>
-                        {t.data_fatura && (
-                          <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 2 }}>
-                            Fat: {t.data_fatura.slice(0,7).split('-').reverse().join('/')}
-                          </div>
-                        )}
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap', color: t.data_fatura ? 'var(--text)' : 'var(--border)' }}>
+                        {t.data_fatura
+                          ? t.data_fatura.slice(0,7).split('-').reverse().join('/')
+                          : '—'}
                       </td>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>{formatDate(t.date)}</td>
                       <td style={{ padding: '10px 12px', fontWeight: 500, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.description}</td>
                       <td style={{ padding: '10px 12px', maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 12, color: t.cartao ? 'var(--text)' : 'var(--border)' }}>{t.cartao || '—'}</td>
                       <td style={{ padding: '10px 12px', textAlign: 'center' }}>
@@ -265,7 +264,7 @@ export function Lancamentos() {
 
       {/* Single delete modal */}
       {deleteTarget && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={() => setDeleteTarget(null)}>
           <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 28, width: '100%', maxWidth: 380, textAlign: 'center' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🗑️</div>
@@ -318,7 +317,7 @@ export function Lancamentos() {
 
       {/* Bulk delete modal */}
       {bulkConfirm && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.6)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={() => setBulkConfirm(false)}>
           <div onClick={e => e.stopPropagation()} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 28, width: '100%', maxWidth: 380, textAlign: 'center' }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🗑️</div>
