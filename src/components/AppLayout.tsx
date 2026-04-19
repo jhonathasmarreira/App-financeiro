@@ -30,6 +30,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
     { id: 'lancamentos', icon: '📋', label: 'Lançamentos' },
     { id: 'parcelas',    icon: '🔄', label: 'Parcelas' },
     { id: 'analise',     icon: '📈', label: 'Análise' },
+    { id: 'cartoes',     icon: '💳', label: 'Cartões' },
     { id: 'importar',    icon: '📥', label: 'CSV Fatura' },
   ];
 

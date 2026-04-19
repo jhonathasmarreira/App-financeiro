@@ -37,4 +37,10 @@ export interface Transaction {
   cartao?: string;       // ex: "Cartão Nubank"
 }
 
-export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'importar';
+export interface Cartao {
+  id: string;
+  nome: string;
+  createdAt: string;
+}
+
+export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'cartoes' | 'importar';

@@ -1,8 +1,9 @@
 import { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import { useFinanceStore } from '../store/useFinanceStore';
+import { useCartaoStore } from '../store/useCartaoStore';
 import { formatCurrency, formatDate } from '../utils/format';
-import type { Transaction } from '../types';
+import type { Transaction, Page } from '../types';
 
 interface PreviewRow {
   date: string;
@@ -87,8 +88,9 @@ function col(row: Record<string, string>, ...keys: string[]): string {
   return '';
 }
 
-export function ImportarCSV({ onImported }: { onImported: () => void }) {
+export function ImportarCSV({ onImported, onNavigate }: { onImported: () => void; onNavigate?: (p: Page) => void }) {
   const { addTransactions } = useFinanceStore();
+  const cartoes = useCartaoStore(s => s.cartoes);
   const [preview, setPreview] = useState<PreviewRow[]>([]);
   const [faturaMonth, setFaturaMonth] = useState(new Date().toISOString().slice(0,7));
   const [cartao, setCartao] = useState('');
@@ -214,10 +216,20 @@ export function ImportarCSV({ onImported }: { onImported: () => void }) {
               style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>💳 Nome do Cartão</label>
-            <input type="text" value={cartao} onChange={e => setCartao(e.target.value)}
-              placeholder="Ex: Cartão Nubank"
-              style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--text)', padding: '7px 12px', borderRadius: 8, fontSize: 13 }} />
+            <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.05em' }}>💳 Cartão</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <select value={cartao} onChange={e => setCartao(e.target.value)}
+                style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: cartao ? 'var(--text)' : 'var(--muted)', padding: '7px 12px', borderRadius: 8, fontSize: 13, flex: 1 }}>
+                <option value="">Selecione um cartão…</option>
+                {cartoes.map(c => <option key={c.id} value={c.nome}>{c.nome}</option>)}
+              </select>
+              {onNavigate && (
+                <button onClick={() => onNavigate('cartoes')} title="Gerenciar cartões"
+                  style={{ background: 'var(--surface2)', border: '1px solid var(--border)', color: 'var(--accent)', padding: '7px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                  + Cartões
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

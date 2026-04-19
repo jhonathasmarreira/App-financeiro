@@ -7,7 +7,9 @@ import { Lancamentos } from './pages/Lancamentos';
 import { Parcelas } from './pages/Parcelas';
 import { Analise } from './pages/Analise';
 import { ImportarCSV } from './pages/ImportarCSV';
+import { Cartoes } from './pages/Cartoes';
 import { useFinanceStore } from './store/useFinanceStore';
+import { useCartaoStore } from './store/useCartaoStore';
 import type { Page } from './types';
 
 const PAGE_TITLES: Record<Page, string> = {
@@ -15,6 +17,7 @@ const PAGE_TITLES: Record<Page, string> = {
   lancamentos: 'Lançamentos',
   parcelas: 'Parcelas',
   analise: 'Análise',
+  cartoes: 'Cartões',
   importar: 'CSV Fatura',
 };
 
@@ -24,17 +27,17 @@ function MainApp() {
   const setToken = useFinanceStore(s => s.setToken);
   const loadTransactions = useFinanceStore(s => s.loadTransactions);
   const loading = useFinanceStore(s => s.loading);
+  const setCartaoToken = useCartaoStore(s => s.setToken);
+  const loadCartoes = useCartaoStore(s => s.loadCartoes);
   const [page, setPage] = useState<Page>('dashboard');
 
   useEffect(() => {
     if (!user?.id || !session) return;
 
-    // Get a Supabase-compatible JWT from Clerk (requires JWT Template named "supabase")
-    // If the template is not yet configured, fall back to anon key (app-level filtering only)
     session
       .getToken({ template: 'supabase' })
       .then((token) => {
-        if (token) setToken(token);
+        if (token) { setToken(token); setCartaoToken(token); }
       })
       .catch(() => {
         console.warn(
@@ -43,6 +46,7 @@ function MainApp() {
       })
       .finally(() => {
         loadTransactions(user.id);
+        loadCartoes(user.id);
       });
   }, [user?.id, session]);
 
@@ -115,7 +119,8 @@ function MainApp() {
       {page === 'lancamentos' && <Lancamentos />}
       {page === 'parcelas'    && <Parcelas />}
       {page === 'analise'     && <Analise />}
-      {page === 'importar'    && <ImportarCSV onImported={() => setPage('lancamentos')} />}
+      {page === 'cartoes'     && <Cartoes />}
+      {page === 'importar'    && <ImportarCSV onImported={() => setPage('lancamentos')} onNavigate={setPage} />}
     </AppLayout>
   );
 }
