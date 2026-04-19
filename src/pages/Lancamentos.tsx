@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useFinanceStore } from '../store/useFinanceStore';
 import type { Transaction } from '../types';
 import { formatCurrency, formatDate, toMonthKey, getMonthLabel } from '../utils/format';
+import { TransactionModal } from '../components/TransactionModal';
 
 function badge(t: Transaction) {
   const today = new Date().toISOString().slice(0,10);
@@ -31,8 +32,10 @@ export function Lancamentos() {
   const [sortCol, setSortCol]         = useState<string>('date');
   const [sortDir, setSortDir]         = useState<'asc'|'desc'>('desc');
   const [deleteTarget, setDeleteTarget] = useState<Transaction | null>(null);
-  const [selected, setSelected]       = useState<Set<string>>(new Set());
-  const [bulkConfirm, setBulkConfirm] = useState(false);
+  const [editTarget, setEditTarget]    = useState<Transaction | null>(null);
+  const [dupTarget, setDupTarget]      = useState<Transaction | null>(null);
+  const [selected, setSelected]        = useState<Set<string>>(new Set());
+  const [bulkConfirm, setBulkConfirm]  = useState(false);
 
   const months = useMemo(() =>
     [...new Set(transactions.map(t => toMonthKey(t.date)))].sort().reverse(), [transactions]);
@@ -211,7 +214,7 @@ export function Lancamentos() {
                   <Th col="parcela" label="Parcela" align="center" />
                   <Th col="amount" label="Valor" align="right" />
                   <th style={{ padding: '10px 12px', fontSize: 11, color: 'var(--muted)', borderBottom: '1px solid var(--border)', whiteSpace: 'nowrap' }}>Tipo</th>
-                  <th style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', width: 36 }}></th>
+                  <th style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', width: 120 }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -246,12 +249,21 @@ export function Lancamentos() {
                         {t.type==='income'?'−':''}{formatCurrency(t.amount)}
                       </td>
                       <td style={{ padding: '10px 12px' }}>{badge(t)}</td>
-                      <td style={{ padding: '10px 12px' }}>
-                        <button onClick={() => setDeleteTarget(t)} style={{
-                          background: 'var(--surface2)', border: '1px solid var(--border)',
-                          color: 'var(--muted)', padding: '4px 8px', borderRadius: 6,
-                          fontSize: 12, cursor: 'pointer',
-                        }}>🗑</button>
+                      <td style={{ padding: '8px 12px' }}>
+                        <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                          <button onClick={() => setEditTarget(t)} title="Editar" style={{
+                            background: 'var(--surface2)', border: '1px solid var(--border)',
+                            color: 'var(--accent)', padding: '4px 8px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                          }}>✏</button>
+                          <button onClick={() => setDupTarget(t)} title="Duplicar" style={{
+                            background: 'var(--surface2)', border: '1px solid var(--border)',
+                            color: 'var(--muted)', padding: '4px 8px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                          }}>⎘</button>
+                          <button onClick={() => setDeleteTarget(t)} title="Excluir" style={{
+                            background: 'var(--surface2)', border: '1px solid var(--border)',
+                            color: 'var(--danger)', padding: '4px 8px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+                          }}>🗑</button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -261,6 +273,16 @@ export function Lancamentos() {
           </div>
         )}
       </div>
+
+      {/* Edit modal */}
+      {editTarget && (
+        <TransactionModal editing={editTarget} onClose={() => setEditTarget(null)} />
+      )}
+
+      {/* Duplicate modal */}
+      {dupTarget && (
+        <TransactionModal duplicating={dupTarget} onClose={() => setDupTarget(null)} />
+      )}
 
       {/* Single delete modal */}
       {deleteTarget && (
