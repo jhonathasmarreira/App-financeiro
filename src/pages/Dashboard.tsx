@@ -71,9 +71,11 @@ function StatCard({ label, value, sub, icon, accent, onDetail }: StatCardProps) 
       onClick={onDetail}>
       <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 600 }}>{label}</div>
       <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--text)' }}>{value}</div>
-      <div style={{ fontSize: 11, color: 'var(--muted)' }}>{sub}</div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 2 }}>
+        <div style={{ fontSize: 11, color: 'var(--muted)' }}>{sub}</div>
+        <div style={{ fontSize: 11, color: accent, fontWeight: 700, letterSpacing: '.03em' }}>Ver ›</div>
+      </div>
       <div style={{ position: 'absolute', right: 16, top: '50%', transform: 'translateY(-50%)', fontSize: 32, opacity: .1 }}>{icon}</div>
-      <div style={{ position: 'absolute', top: 10, right: 12, background: 'rgba(255,255,255,.08)', borderRadius: 6, padding: '3px 8px', fontSize: 13, color: 'var(--muted)' }}>👁</div>
     </div>
   );
 }
