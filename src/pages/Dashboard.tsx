@@ -267,7 +267,7 @@ export function Dashboard({ onNavigate }: { onNavigate: (p: Page) => void }) {
       </div>
 
       {detail && <DetailBottomSheet sheet={detail} onClose={() => setDetail(null)} onNavigate={onNavigate} />}
-      {modalOpen && <TransactionModal onClose={() => setModalOpen(false)} />}
+      {modalOpen && <TransactionModal onClose={() => setModalOpen(false)} onNavigate={onNavigate} />}
     </div>
   );
 }

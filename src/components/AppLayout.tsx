@@ -168,7 +168,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
 
       {/* FAB — sempre visível no mobile */}
       <button className="fab-btn" onClick={() => setFabOpen(true)} aria-label="Nova Transação">+</button>
-      {fabOpen && <TransactionModal onClose={() => setFabOpen(false)} />}
+      {fabOpen && <TransactionModal onClose={() => setFabOpen(false)} onNavigate={navigate} />}
     </div>
   );
 }
