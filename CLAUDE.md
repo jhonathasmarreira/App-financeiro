@@ -46,13 +46,19 @@ Both stores apply **optimistic updates**: state is updated immediately, then the
 
 ### Database Schema
 
-Two main tables managed via SQL migrations in `supabase/migrations/`:
+Two main tables managed via **Flyway** migrations in `db/migrations/`:
 
 **`transactions`** — `id`, `user_id`, `type` (`income`|`expense`), `description`, `amount`, `category`, `date`, `created_at`, `parcela` (e.g. `"01/12"`), `data_fatura`, `cartao`
 
 **`cartoes`** — `id`, `user_id`, `nome`, `created_at`
 
-Migrations are applied automatically by the CI pipeline (`supabase db push --include-all`) on push to `main`. The `schema_migrations` table tracks applied versions.
+Migrations follow the Flyway naming convention `V{n}__{description}.sql`. Applied versions are tracked automatically in `flyway_schema_history`. The CI pipeline runs `flyway migrate` on every push to `main`; the Docker image `flyway/flyway:10` is used (no local Flyway install needed in CI).
+
+**Adding a new migration:** create `db/migrations/V{next}__{description}.sql`. Flyway applies it on the next deploy. Never edit an already-applied migration file — Flyway validates checksums and will reject it.
+
+**Secrets required in GitHub Actions:**
+- `SUPABASE_DB_HOST` — e.g. `db.xxxx.supabase.co`
+- `SUPABASE_DB_PASSWORD` — database password from Supabase dashboard
 
 ### Key Patterns
 
@@ -67,6 +73,6 @@ Migrations are applied automatically by the CI pipeline (`supabase db push --inc
 ### CI/CD
 
 GitHub Actions (`.github/workflows/deploy.yml`) on push to `main`:
-1. Runs Supabase migrations
+1. Runs Flyway migrations via Docker (`flyway/flyway:10`) against the Supabase PostgreSQL database
 2. Builds the app with production env vars from GitHub Secrets
 3. Deploys to GitHub Pages at `/App-financeiro/` (matches `vite.config.ts base`)
