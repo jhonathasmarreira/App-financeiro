@@ -43,4 +43,4 @@ export interface Cartao {
   createdAt: string;
 }
 
-export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'cartoes' | 'importar';
+export type Page = 'dashboard' | 'lancamentos' | 'parcelas' | 'analise' | 'cartoes' | 'importar' | 'academia';

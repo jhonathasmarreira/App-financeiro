@@ -32,6 +32,7 @@ export function AppLayout({ page, onNavigate, children, title, actions }: Props)
     { id: 'analise',     icon: '📈', label: 'Análise' },
     { id: 'cartoes',     icon: '💳', label: 'Cartões' },
     { id: 'importar',    icon: '📥', label: 'CSV Fatura' },
+    { id: 'academia',    icon: '🏋️', label: 'Academia' },
   ];
 
   function navigate(p: Page) {

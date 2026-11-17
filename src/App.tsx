@@ -8,6 +8,7 @@ import { Parcelas } from './pages/Parcelas';
 import { Analise } from './pages/Analise';
 import { ImportarCSV } from './pages/ImportarCSV';
 import { Cartoes } from './pages/Cartoes';
+import { Academia } from './pages/Academia';
 import { useFinanceStore } from './store/useFinanceStore';
 import { useCartaoStore } from './store/useCartaoStore';
 import type { Page } from './types';
@@ -19,6 +20,7 @@ const PAGE_TITLES: Record<Page, string> = {
   analise: 'Análise',
   cartoes: 'Cartões',
   importar: 'CSV Fatura',
+  academia: 'Academia',
 };
 
 function MainApp() {
@@ -120,6 +122,7 @@ function MainApp() {
       {page === 'parcelas'    && <Parcelas />}
       {page === 'analise'     && <Analise />}
       {page === 'cartoes'     && <Cartoes />}
+      {page === 'academia'    && <Academia />}
       {page === 'importar'    && <ImportarCSV onImported={() => setPage('lancamentos')} onNavigate={setPage} />}
     </AppLayout>
   );
