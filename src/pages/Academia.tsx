@@ -28,7 +28,7 @@ const TREINOS: Treino[] = [
     exercicios: [
       { id: 'Barbell_Bench_Press_-_Medium_Grip', nome: 'Supino reto', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Desça a barra até a linha do mamilo, escápulas retraídas.' },
       { id: 'Incline_Dumbbell_Press', nome: 'Supino inclinado com halteres', barra: 'halter', series: 4, reps: '10', descanso: '90s', dica: 'Banco entre 30° e 45°, halteres se encontram acima do peito.' },
-      { id: 'Decline_Barbell_Bench_Press', nome: 'Supino declinado', barra: 'grande', series: 3, reps: '10', descanso: '75s', dica: 'Pés bem presos, desça a barra na parte baixa do peito.' },
+      { id: 'Dumbbell_Bench_Press', nome: 'Supino reto com halteres', barra: 'halter', series: 3, reps: '10', descanso: '75s', dica: 'Banco reto, desça os halteres até a linha do peito e suba juntando-os.' },
       { id: 'Dumbbell_Flyes', nome: 'Crucifixo reto', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Cotovelos levemente flexionados, abra até sentir o peitoral alongar.' },
       { id: 'Straight-Arm_Dumbbell_Pullover', nome: 'Pullover com halter', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Segure um halter com as duas mãos, desça atrás da cabeça com controle.' },
       { id: 'Close-Grip_EZ-Bar_Press', nome: 'Supino fechado', barra: 'pequena', series: 3, reps: '10', descanso: '60s', dica: 'Pegada na largura dos ombros, cotovelos junto ao corpo.' },
