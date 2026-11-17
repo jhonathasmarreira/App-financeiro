@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-type Barra = 'grande' | 'pequena';
+type Barra = 'grande' | 'pequena' | 'halter';
 
 interface Exercicio {
   id: string;          // pasta no free-exercise-db
@@ -27,11 +27,13 @@ const TREINOS: Treino[] = [
     key: 'peito', label: 'Peito', icon: '🏋️', foco: 'Peitoral + tríceps',
     exercicios: [
       { id: 'Barbell_Bench_Press_-_Medium_Grip', nome: 'Supino reto', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Desça a barra até a linha do mamilo, escápulas retraídas.' },
-      { id: 'Barbell_Incline_Bench_Press_-_Medium_Grip', nome: 'Supino inclinado', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Banco entre 30° e 45°, barra desce na parte alta do peito.' },
+      { id: 'Incline_Dumbbell_Press', nome: 'Supino inclinado com halteres', barra: 'halter', series: 4, reps: '10', descanso: '90s', dica: 'Banco entre 30° e 45°, halteres se encontram acima do peito.' },
       { id: 'Decline_Barbell_Bench_Press', nome: 'Supino declinado', barra: 'grande', series: 3, reps: '10', descanso: '75s', dica: 'Pés bem presos, desça a barra na parte baixa do peito.' },
-      { id: 'Bent-Arm_Barbell_Pullover', nome: 'Pullover com barra', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Cotovelos levemente flexionados, alongue bem o peitoral.' },
+      { id: 'Dumbbell_Flyes', nome: 'Crucifixo reto', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Cotovelos levemente flexionados, abra até sentir o peitoral alongar.' },
+      { id: 'Straight-Arm_Dumbbell_Pullover', nome: 'Pullover com halter', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Segure um halter com as duas mãos, desça atrás da cabeça com controle.' },
       { id: 'Close-Grip_EZ-Bar_Press', nome: 'Supino fechado', barra: 'pequena', series: 3, reps: '10', descanso: '60s', dica: 'Pegada na largura dos ombros, cotovelos junto ao corpo.' },
       { id: 'EZ-Bar_Skullcrusher', nome: 'Tríceps testa', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Só o antebraço se move; cotovelos apontando para o teto.' },
+      { id: 'Standing_Dumbbell_Triceps_Extension', nome: 'Tríceps francês', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Halter atrás da cabeça, cotovelos fechados apontando para cima.' },
     ],
   },
   {
@@ -39,10 +41,12 @@ const TREINOS: Treino[] = [
     exercicios: [
       { id: 'Barbell_Deadlift', nome: 'Levantamento terra', barra: 'grande', series: 4, reps: '6–8', descanso: '120s', dica: 'Coluna neutra, barra colada nas pernas o tempo todo.' },
       { id: 'Bent_Over_Barbell_Row', nome: 'Remada curvada pronada', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Tronco a ~45°, puxe a barra em direção ao umbigo.' },
-      { id: 'Reverse_Grip_Bent-Over_Rows', nome: 'Remada curvada supinada', barra: 'grande', series: 3, reps: '10', descanso: '75s', dica: 'Pegada supinada ativa mais a dorsal baixa e o bíceps.' },
+      { id: 'One-Arm_Dumbbell_Row', nome: 'Remada serrote', barra: 'halter', series: 3, reps: '10 cada lado', descanso: '60s', dica: 'Joelho e mão no banco, puxe o halter em direção ao quadril.' },
       { id: 'Bent_Over_Two-Arm_Long_Bar_Row', nome: 'Remada cavalinho (barra T)', barra: 'grande', series: 3, reps: '10', descanso: '75s', dica: 'Ponta da barra no canto da parede, junte as escápulas no topo.' },
+      { id: 'Dumbbell_Incline_Row', nome: 'Remada no banco inclinado', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Peito apoiado no banco, elimina o embalo do tronco.' },
       { id: 'EZ-Bar_Curl', nome: 'Rosca direta', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Sem balançar o tronco; cotovelos parados ao lado do corpo.' },
-      { id: 'Reverse_Barbell_Curl', nome: 'Rosca inversa', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Pegada pronada; trabalha braquial e antebraço.' },
+      { id: 'Dumbbell_Alternate_Bicep_Curl', nome: 'Rosca alternada', barra: 'halter', series: 3, reps: '10 cada braço', descanso: '60s', dica: 'Gire o punho (supinação) enquanto sobe o halter.' },
+      { id: 'Hammer_Curls', nome: 'Rosca martelo', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Pegada neutra; trabalha braquial e antebraço.' },
     ],
   },
   {
@@ -51,7 +55,9 @@ const TREINOS: Treino[] = [
       { id: 'Barbell_Squat', nome: 'Agachamento livre', barra: 'grande', series: 4, reps: '8–10', descanso: '120s', dica: 'Joelhos na direção dos pés, desça até pelo menos 90°.' },
       { id: 'Front_Barbell_Squat', nome: 'Agachamento frontal', barra: 'grande', series: 3, reps: '8', descanso: '90s', dica: 'Barra apoiada nos deltoides, tronco o mais ereto possível.' },
       { id: 'Stiff-Legged_Barbell_Deadlift', nome: 'Stiff', barra: 'grande', series: 4, reps: '10', descanso: '90s', dica: 'Quadril vai para trás, joelhos quase estendidos, sinta o posterior.' },
-      { id: 'Barbell_Lunge', nome: 'Afundo', barra: 'pequena', series: 3, reps: '10 cada perna', descanso: '75s', dica: 'Passo largo, joelho de trás quase toca o chão.' },
+      { id: 'Dumbbell_Lunges', nome: 'Afundo com halteres', barra: 'halter', series: 3, reps: '10 cada perna', descanso: '75s', dica: 'Passo largo, joelho de trás quase toca o chão.' },
+      { id: 'Split_Squat_with_Dumbbells', nome: 'Agachamento búlgaro', barra: 'halter', series: 3, reps: '10 cada perna', descanso: '75s', dica: 'Pé de trás apoiado no banco, tronco levemente inclinado à frente.' },
+      { id: 'Plie_Dumbbell_Squat', nome: 'Agachamento sumô', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Pés afastados e virados para fora, halter entre as pernas.' },
       { id: 'Barbell_Hip_Thrust', nome: 'Elevação pélvica', barra: 'grande', series: 3, reps: '12', descanso: '75s', dica: 'Use uma almofada na barra; contraia o glúteo 1s no topo.' },
       { id: 'Standing_Barbell_Calf_Raise', nome: 'Panturrilha em pé', barra: 'grande', series: 4, reps: '15', descanso: '45s', dica: 'Ponta dos pés numa anilha para ganhar amplitude.' },
     ],
@@ -60,10 +66,11 @@ const TREINOS: Treino[] = [
     key: 'ombro', label: 'Ombro', icon: '🎯', foco: 'Deltoides + trapézio',
     exercicios: [
       { id: 'Standing_Military_Press', nome: 'Desenvolvimento militar em pé', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Abdômen e glúteo contraídos, barra sobe em linha reta.' },
-      { id: 'Seated_Barbell_Military_Press', nome: 'Desenvolvimento sentado', barra: 'grande', series: 3, reps: '10', descanso: '75s', dica: 'Desça a barra até a altura do queixo.' },
+      { id: 'Arnold_Dumbbell_Press', nome: 'Desenvolvimento Arnold', barra: 'halter', series: 3, reps: '10', descanso: '75s', dica: 'Comece com as palmas para você e gire enquanto empurra para cima.' },
+      { id: 'Side_Lateral_Raise', nome: 'Elevação lateral', barra: 'halter', series: 4, reps: '12–15', descanso: '45s', dica: 'Suba até a altura dos ombros, cotovelos levemente flexionados.' },
       { id: 'Upright_Barbell_Row', nome: 'Remada alta', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Cotovelos lideram o movimento, até a altura dos ombros.' },
       { id: 'Standing_Front_Barbell_Raise_Over_Head', nome: 'Elevação frontal', barra: 'pequena', series: 3, reps: '12', descanso: '60s', dica: 'Carga leve, braços quase estendidos, sem embalo.' },
-      { id: 'Barbell_Rear_Delt_Row', nome: 'Remada p/ deltoide posterior', barra: 'grande', series: 3, reps: '12', descanso: '60s', dica: 'Pegada aberta, puxe a barra em direção ao peito.' },
+      { id: 'Reverse_Flyes', nome: 'Crucifixo invertido', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Tronco inclinado, abra os braços focando no deltoide posterior.' },
       { id: 'Barbell_Shrug', nome: 'Encolhimento', barra: 'grande', series: 4, reps: '12', descanso: '60s', dica: 'Suba os ombros em direção às orelhas, segure 1s.' },
     ],
   },
@@ -103,6 +110,7 @@ function ExercicioAnimado({ id, nome, size }: { id: string; nome: string; size: 
 const BARRA_STYLE: Record<Barra, { label: string; bg: string; color: string }> = {
   grande:  { label: 'Barra grande',  bg: 'rgba(108,99,255,.15)', color: 'var(--accent)' },
   pequena: { label: 'Barra pequena', bg: 'rgba(67,217,173,.15)', color: '#43d9ad' },
+  halter:  { label: 'Halteres',      bg: 'rgba(255,179,71,.15)', color: '#ffb347' },
 };
 
 export function Academia() {
