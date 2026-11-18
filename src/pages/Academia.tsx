@@ -28,7 +28,7 @@ const TREINOS: Treino[] = [
     exercicios: [
       { id: 'Barbell_Bench_Press_-_Medium_Grip', nome: 'Supino reto', barra: 'grande', series: 4, reps: '8–10', descanso: '90s', dica: 'Desça a barra até a linha do mamilo, escápulas retraídas.' },
       { id: 'Incline_Dumbbell_Press', nome: 'Supino inclinado com halteres', barra: 'halter', series: 4, reps: '10', descanso: '90s', dica: 'Banco entre 30° e 45°, halteres se encontram acima do peito.' },
-      { id: 'Dumbbell_Bench_Press', nome: 'Supino reto com halteres', barra: 'halter', series: 3, reps: '10', descanso: '75s', dica: 'Banco reto, desça os halteres até a linha do peito e suba juntando-os.' },
+      { id: 'Dumbbell_Bench_Press_with_Neutral_Grip', nome: 'Supino com halteres colados', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Pegada neutra, halteres pressionados um contra o outro do início ao fim; foco no peitoral interno.' },
       { id: 'Dumbbell_Flyes', nome: 'Crucifixo reto', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Cotovelos levemente flexionados, abra até sentir o peitoral alongar.' },
       { id: 'Straight-Arm_Dumbbell_Pullover', nome: 'Pullover com halter', barra: 'halter', series: 3, reps: '12', descanso: '60s', dica: 'Segure um halter com as duas mãos, desça atrás da cabeça com controle.' },
       { id: 'Close-Grip_EZ-Bar_Press', nome: 'Supino fechado', barra: 'pequena', series: 3, reps: '10', descanso: '60s', dica: 'Pegada na largura dos ombros, cotovelos junto ao corpo.' },
@@ -75,6 +75,61 @@ const TREINOS: Treino[] = [
     ],
   },
 ];
+
+/** Músculos trabalhados: [principais, secundários]. Base: free-exercise-db, refinado em PT-BR. */
+const MUSCULOS: Record<string, [string[], string[]]> = {
+  'Barbell_Bench_Press_-_Medium_Grip':      [['Peitoral'], ['Deltoide anterior', 'Tríceps']],
+  'Incline_Dumbbell_Press':                 [['Peitoral superior'], ['Deltoide anterior', 'Tríceps']],
+  'Dumbbell_Bench_Press_with_Neutral_Grip': [['Peitoral (porção interna)'], ['Tríceps', 'Deltoide anterior']],
+  'Dumbbell_Flyes':                         [['Peitoral'], ['Deltoide anterior']],
+  'Straight-Arm_Dumbbell_Pullover':         [['Peitoral', 'Dorsal (latíssimo)'], ['Tríceps', 'Serrátil']],
+  'Close-Grip_EZ-Bar_Press':                [['Tríceps'], ['Peitoral', 'Deltoide anterior']],
+  'EZ-Bar_Skullcrusher':                    [['Tríceps'], ['Antebraço']],
+  'Standing_Dumbbell_Triceps_Extension':    [['Tríceps (cabeça longa)'], []],
+  'Barbell_Deadlift':                       [['Lombar', 'Glúteos', 'Posterior de coxa'], ['Quadríceps', 'Trapézio', 'Dorsal', 'Antebraço']],
+  'Bent_Over_Barbell_Row':                  [['Meio das costas', 'Dorsal (latíssimo)'], ['Bíceps', 'Deltoide posterior', 'Lombar']],
+  'One-Arm_Dumbbell_Row':                   [['Dorsal (latíssimo)', 'Meio das costas'], ['Bíceps', 'Deltoide posterior']],
+  'Bent_Over_Two-Arm_Long_Bar_Row':         [['Meio das costas'], ['Dorsal (latíssimo)', 'Bíceps']],
+  'Dumbbell_Incline_Row':                   [['Meio das costas'], ['Dorsal (latíssimo)', 'Bíceps', 'Deltoide posterior']],
+  'EZ-Bar_Curl':                            [['Bíceps'], ['Antebraço']],
+  'Dumbbell_Alternate_Bicep_Curl':          [['Bíceps'], ['Antebraço']],
+  'Hammer_Curls':                           [['Braquial', 'Bíceps'], ['Antebraço']],
+  'Barbell_Squat':                          [['Quadríceps', 'Glúteos'], ['Posterior de coxa', 'Lombar', 'Panturrilha']],
+  'Front_Barbell_Squat':                    [['Quadríceps'], ['Glúteos', 'Abdômen', 'Lombar']],
+  'Stiff-Legged_Barbell_Deadlift':          [['Posterior de coxa'], ['Glúteos', 'Lombar']],
+  'Dumbbell_Lunges':                        [['Quadríceps', 'Glúteos'], ['Posterior de coxa', 'Panturrilha']],
+  'Split_Squat_with_Dumbbells':             [['Quadríceps', 'Glúteos'], ['Posterior de coxa']],
+  'Plie_Dumbbell_Squat':                    [['Adutores (parte interna)', 'Glúteos'], ['Quadríceps', 'Posterior de coxa']],
+  'Barbell_Hip_Thrust':                     [['Glúteos'], ['Posterior de coxa']],
+  'Standing_Barbell_Calf_Raise':            [['Panturrilha'], []],
+  'Standing_Military_Press':                [['Deltoide anterior', 'Deltoide lateral'], ['Tríceps', 'Trapézio', 'Abdômen']],
+  'Arnold_Dumbbell_Press':                  [['Deltoide anterior', 'Deltoide lateral'], ['Tríceps']],
+  'Side_Lateral_Raise':                     [['Deltoide lateral'], ['Trapézio']],
+  'Upright_Barbell_Row':                    [['Deltoide lateral', 'Trapézio'], ['Bíceps']],
+  'Standing_Front_Barbell_Raise_Over_Head': [['Deltoide anterior'], ['Peitoral superior']],
+  'Reverse_Flyes':                          [['Deltoide posterior'], ['Meio das costas', 'Trapézio']],
+  'Barbell_Shrug':                          [['Trapézio'], ['Antebraço']],
+};
+
+function musculos(id: string) {
+  const [principais, secundarios] = MUSCULOS[id] ?? [[], []];
+  return { principais, secundarios };
+}
+
+function Chips({ itens, destaque }: { itens: string[]; destaque?: boolean }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+      {itens.map(m => (
+        <span key={m} style={{
+          fontSize: 11.5, fontWeight: 600, padding: '3px 9px', borderRadius: 20,
+          background: destaque ? 'rgba(255,101,132,.15)' : 'var(--surface2)',
+          color: destaque ? '#ff6584' : 'var(--muted)',
+          border: destaque ? 'none' : '1px solid var(--border)',
+        }}>{m}</span>
+      ))}
+    </div>
+  );
+}
 
 const STORAGE_KEY = 'academia-feitos';
 
@@ -217,6 +272,11 @@ export function Academia() {
                 </div>
               </div>
 
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted)', whiteSpace: 'nowrap', paddingTop: 3 }}>🎯 Trabalha:</span>
+                <Chips itens={musculos(e.id).principais} destaque />
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {[['Séries', e.series], ['Reps', e.reps], ['Descanso', e.descanso]].map(([l, v]) => (
                   <div key={l} style={{ background: 'var(--surface2)', borderRadius: 8, padding: '8px 4px', textAlign: 'center' }}>
@@ -228,15 +288,24 @@ export function Academia() {
 
               <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.45 }}>💡 {e.dica}</div>
 
-              <button
-                onClick={() => toggle(e)}
-                style={{
-                  marginTop: 'auto', padding: '9px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                  background: feito ? 'rgba(67,217,173,.15)' : 'var(--accent)',
-                  color: feito ? '#43d9ad' : '#fff',
-                  border: feito ? '1px solid #43d9ad' : 'none',
-                }}
-              >{feito ? '✓ Concluído' : 'Marcar como feito'}</button>
+              <div style={{ marginTop: 'auto', display: 'flex', gap: 8 }}>
+                <button
+                  onClick={() => setZoom(e)}
+                  style={{
+                    padding: '9px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    background: 'transparent', color: 'var(--text)', border: '1px solid var(--border)',
+                  }}
+                >ℹ️ Detalhes</button>
+                <button
+                  onClick={() => toggle(e)}
+                  style={{
+                    flex: 1, padding: '9px 12px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    background: feito ? 'rgba(67,217,173,.15)' : 'var(--accent)',
+                    color: feito ? '#43d9ad' : '#fff',
+                    border: feito ? '1px solid #43d9ad' : 'none',
+                  }}
+                >{feito ? '✓ Concluído' : 'Marcar como feito'}</button>
+              </div>
             </div>
           );
         })}
@@ -267,6 +336,16 @@ export function Academia() {
             <div style={{ fontSize: 14 }}>
               <b>{zoom.series} × {zoom.reps}</b> · descanso {zoom.descanso} · {BARRA_STYLE[zoom.barra].label}
             </div>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Músculos principais</div>
+              <Chips itens={musculos(zoom.id).principais} destaque />
+            </div>
+            {musculos(zoom.id).secundarios.length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Também trabalha</div>
+                <Chips itens={musculos(zoom.id).secundarios} />
+              </div>
+            )}
             <div style={{ fontSize: 13, color: 'var(--muted)' }}>💡 {zoom.dica}</div>
           </div>
         </div>
