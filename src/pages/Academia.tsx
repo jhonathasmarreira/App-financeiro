@@ -131,6 +131,87 @@ function Chips({ itens, destaque }: { itens: string[]; destaque?: boolean }) {
   );
 }
 
+/** Nome do músculo → região desenhada no mapa do corpo. */
+const REGIAO: Record<string, string> = {
+  'Peitoral': 'peitoral', 'Peitoral superior': 'peitoral', 'Peitoral (porção interna)': 'peitoral',
+  'Deltoide anterior': 'deltAnt', 'Deltoide lateral': 'deltLat', 'Deltoide posterior': 'deltPost',
+  'Tríceps': 'triceps', 'Tríceps (cabeça longa)': 'triceps',
+  'Bíceps': 'biceps', 'Braquial': 'biceps', 'Antebraço': 'antebraco',
+  'Dorsal (latíssimo)': 'dorsal', 'Dorsal': 'dorsal', 'Meio das costas': 'meioCostas',
+  'Trapézio': 'trapezio', 'Lombar': 'lombar', 'Serrátil': 'serratil', 'Abdômen': 'abdomen',
+  'Glúteos': 'gluteos', 'Posterior de coxa': 'posterior', 'Quadríceps': 'quadriceps',
+  'Adutores (parte interna)': 'adutores', 'Panturrilha': 'panturrilha',
+};
+
+const COR_PRINCIPAL = '#ff6584';
+const COR_SECUNDARIA = '#ffb347';
+
+/** Desenha a forma e o espelho dela no lado direito do corpo. */
+const lado = (node: React.ReactNode) => (
+  <>{node}<g transform="translate(100 0) scale(-1 1)">{node}</g></>
+);
+
+function CorpoMuscular({ principais, secundarios }: { principais: string[]; secundarios: string[] }) {
+  const p = new Set(principais.map(m => REGIAO[m]));
+  const s = new Set(secundarios.map(m => REGIAO[m]));
+  const cor = (k: string) => (p.has(k) ? COR_PRINCIPAL : s.has(k) ? COR_SECUNDARIA : 'var(--border)');
+
+  const silhueta = (
+    <g fill="var(--surface2)" stroke="var(--border)" strokeWidth={0.8}>
+      <ellipse cx={50} cy={15} rx={8.5} ry={10.5} />
+      <rect x={45} y={24} width={10} height={10} rx={2} />
+      <path d="M34,36 Q50,32 66,36 L64,70 Q63,82 62,92 L38,92 Q37,82 36,70 Z" />
+      <path d="M38,92 L62,92 L64,106 L36,106 Z" />
+      {lado(<path d="M25,38 L35,37 L34,66 L29,95 L19,95 L20,68 Z" />)}
+      {lado(<path d="M36,100 L50,100 L49.5,150 L47,192 L37,192 L34.5,150 Z" />)}
+      {lado(<circle cx={22} cy={98} r={3.5} />)}
+      {lado(<ellipse cx={42} cy={151} rx={5} ry={4} />)}
+      {lado(<ellipse cx={42} cy={193} rx={5.5} ry={3} />)}
+    </g>
+  );
+
+  const vista = (titulo: string, regioes: React.ReactNode) => (
+    <div style={{ textAlign: 'center' }}>
+      <svg viewBox="14 2 72 198" style={{ height: 230, width: 'auto', display: 'block' }} aria-label={`Músculos trabalhados – ${titulo}`}>
+        {silhueta}
+        <g stroke="var(--surface)" strokeWidth={0.6}>{regioes}</g>
+      </svg>
+      <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4 }}>{titulo}</div>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+      {vista('Frente', <>
+        <g fill={cor('trapezio')}>{lado(<path d="M45,30 L36,36 L45,37 Z" />)}</g>
+        <g fill={cor('peitoral')}>{lado(<path d="M49.5,38 L37,38 Q33,48 37,55 Q44,60 49.5,56 Z" />)}</g>
+        <g fill={cor('serratil')}>{lado(<path d="M37,58 L41,59 L41,68 L37.5,66 Z" />)}</g>
+        <g fill={cor('abdomen')}><rect x={43} y={58} width={14} height={33} rx={4} /></g>
+        <g fill={cor('deltAnt')}>{lado(<ellipse cx={31} cy={42} rx={7} ry={7.5} />)}</g>
+        <g fill={cor('deltLat')}>{lado(<ellipse cx={25.5} cy={45} rx={3.5} ry={6.5} />)}</g>
+        <g fill={cor('biceps')}>{lado(<ellipse cx={27} cy={60} rx={5} ry={10} />)}</g>
+        <g fill={cor('antebraco')}>{lado(<ellipse cx={24} cy={82} rx={4.5} ry={11} />)}</g>
+        <g fill={cor('quadriceps')}>{lado(<ellipse cx={41.5} cy={128} rx={7.5} ry={21} />)}</g>
+        <g fill={cor('adutores')}>{lado(<ellipse cx={48} cy={117} rx={2.6} ry={11} />)}</g>
+        <g fill={cor('panturrilha')}>{lado(<ellipse cx={42} cy={172} rx={4.5} ry={16} />)}</g>
+      </>)}
+      {vista('Costas', <>
+        <g fill={cor('meioCostas')}>{lado(<path d="M49.5,48 L44.5,42 L40,46 L42,62 L49.5,62 Z" />)}</g>
+        <g fill={cor('dorsal')}>{lado(<path d="M38,46 Q33,62 41,80 L49.5,72 L49.5,64 L42,64 L40,48 Z" />)}</g>
+        <g fill={cor('lombar')}><rect x={43} y={74} width={14} height={17} rx={3} /></g>
+        <g fill={cor('trapezio')}><path d="M50,24 L35,37 L44,41 L50,52 L56,41 L65,37 Z" /></g>
+        <g fill={cor('deltPost')}>{lado(<ellipse cx={31} cy={42} rx={7} ry={7.5} />)}</g>
+        <g fill={cor('deltLat')}>{lado(<ellipse cx={25.5} cy={45} rx={3.5} ry={6.5} />)}</g>
+        <g fill={cor('triceps')}>{lado(<ellipse cx={27} cy={60} rx={5} ry={10} />)}</g>
+        <g fill={cor('antebraco')}>{lado(<ellipse cx={24} cy={82} rx={4.5} ry={11} />)}</g>
+        <g fill={cor('gluteos')}>{lado(<ellipse cx={43.5} cy={101} rx={7} ry={9} />)}</g>
+        <g fill={cor('posterior')}>{lado(<ellipse cx={41.5} cy={131} rx={7.5} ry={19} />)}</g>
+        <g fill={cor('panturrilha')}>{lado(<ellipse cx={42} cy={170} rx={5.5} ry={14} />)}</g>
+      </>)}
+    </div>
+  );
+}
+
 const STORAGE_KEY = 'academia-feitos';
 
 function loadFeitos(): Record<string, boolean> {
@@ -326,7 +407,7 @@ export function Academia() {
         >
           <div onClick={ev => ev.stopPropagation()} style={{
             background: 'var(--surface)', borderRadius: 'var(--radius)', padding: 16,
-            width: 'min(640px, 100%)', display: 'flex', flexDirection: 'column', gap: 12,
+            width: 'min(720px, 100%)', maxHeight: '92vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontSize: 16, fontWeight: 700 }}>{zoom.nome}</div>
@@ -336,17 +417,30 @@ export function Academia() {
             <div style={{ fontSize: 14 }}>
               <b>{zoom.series} × {zoom.reps}</b> · descanso {zoom.descanso} · {BARRA_STYLE[zoom.barra].label}
             </div>
-            <div>
-              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Músculos principais</div>
-              <Chips itens={musculos(zoom.id).principais} destaque />
-            </div>
-            {musculos(zoom.id).secundarios.length > 0 && (
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>Também trabalha</div>
-                <Chips itens={musculos(zoom.id).secundarios} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'center' }}>
+              <div style={{ flex: '0 0 auto', margin: '0 auto' }}>
+                <CorpoMuscular {...musculos(zoom.id)} />
               </div>
-            )}
-            <div style={{ fontSize: 13, color: 'var(--muted)' }}>💡 {zoom.dica}</div>
+              <div style={{ flex: '1 1 220px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
+                    <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: COR_PRINCIPAL, marginRight: 6 }} />
+                    Músculos principais
+                  </div>
+                  <Chips itens={musculos(zoom.id).principais} destaque />
+                </div>
+                {musculos(zoom.id).secundarios.length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '.06em', marginBottom: 6 }}>
+                      <span style={{ display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: COR_SECUNDARIA, marginRight: 6 }} />
+                      Também trabalha
+                    </div>
+                    <Chips itens={musculos(zoom.id).secundarios} />
+                  </div>
+                )}
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>💡 {zoom.dica}</div>
+              </div>
+            </div>
           </div>
         </div>
       )}
